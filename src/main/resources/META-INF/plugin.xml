@@ -5,11 +5,13 @@
     <vendor>ljacqu</vendor>
 
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.java</depends>
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow factoryClass="com.github.ljacqu.ijpackagehighlighter.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
         <postStartupActivity implementation="com.github.ljacqu.ijpackagehighlighter.startup.MyProjectActivity" />
+        <annotator language="JAVA" implementationClass="com.github.ljacqu.ijpackagehighlighter.startup.PackageHighlighter" />
     </extensions>
 </idea-plugin>
