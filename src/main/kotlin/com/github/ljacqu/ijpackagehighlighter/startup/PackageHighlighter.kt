@@ -14,18 +14,18 @@ import java.awt.Font
 class PackageHighlighter : Annotator {
 
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
-        if (element is PsiImportStatement) {
-            annotateIfQualifiedNameMatches(element, holder, element.qualifiedName)
-        } else if (element is PsiPackageStatement) {
-            annotateIfQualifiedNameMatches(element, holder, element.packageName)
-        } else if (element is PsiJavaCodeReferenceElement) {
-            if (PsiTreeUtil.getParentOfType(element, PsiImportStatement::class.java, false) != null
-                || PsiTreeUtil.getParentOfType(element, PsiPackageStatement::class.java, false) != null) {
-                return // PsiImportStatement & PsiPackageStatement are handled as a whole
+        when (element) {
+            is PsiImportStatement -> {
+                annotateIfQualifiedNameMatches(element, holder, element.qualifiedName)
             }
-
-            if (!isInTargetContext(element)) return
-            annotateIfQualifiedNameMatches(element, holder, resolveQualifiedName(element))
+            is PsiPackageStatement -> {
+                annotateIfQualifiedNameMatches(element, holder, element.packageName)
+            }
+            is PsiJavaCodeReferenceElement -> {
+                if (isRelevantReferenceElement(element)) {
+                    annotateIfQualifiedNameMatches(element, holder, resolveQualifiedName(element))
+                }
+            }
         }
     }
 
@@ -71,7 +71,13 @@ class PackageHighlighter : Annotator {
         return null
     }
 
-    private fun isInTargetContext(elem: PsiJavaCodeReferenceElement): Boolean {
+    private fun isRelevantReferenceElement(elem: PsiJavaCodeReferenceElement): Boolean {
+        // PsiImportStatement & PsiPackageStatement are handled as a whole, so ignore the children elements
+        if (PsiTreeUtil.getParentOfType(elem, PsiImportStatement::class.java, false) != null
+            || PsiTreeUtil.getParentOfType(elem, PsiPackageStatement::class.java, false) != null) {
+            return false
+        }
+
         return true
 
         // todo lj: remove this? Or try to skip Class.method() calls?
