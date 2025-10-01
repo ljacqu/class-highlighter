@@ -10,11 +10,10 @@ import java.awt.Font
 
 /**
  * Annotates Java type references that appear in method signatures and catch clauses.
- * Applies background highlighting based on package prefix configured in PackageHighlightSettings.
  */
 class PackageHighlighter : Annotator {
 
-    override fun annotate(element: PsiElement, holder: AnnotationHolder): Unit {
+    override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         if (element !is PsiJavaCodeReferenceElement) return
         if (!isInTargetContext(element)) return
         val qualifier = resolveQualifiedName(element)
@@ -24,11 +23,33 @@ class PackageHighlighter : Annotator {
             val bg = Color(0xE2F0D9)
             val attrs = TextAttributes(null, bg, null, null, Font.PLAIN)
 
-            // Create an info annotation and enforce the attributes (background)
-            holder.newAnnotation(HighlightSeverity.INFORMATION, "Java.util class")
-                .enforcedTextAttributes(attrs)
-                .create()
+            val referenceNameElem = getReferenceNameForRange(element)
+            if (referenceNameElem != null) {
+                holder.newAnnotation(HighlightSeverity.INFORMATION, "Java.util class")
+                    .enforcedTextAttributes(attrs)
+                    .range(referenceNameElem.textRange)
+                    .create()
+            } else {
+                holder.newAnnotation(HighlightSeverity.INFORMATION, "Java.util class")
+                    .enforcedTextAttributes(attrs)
+                    .create()
+            }
         }
+    }
+
+    /**
+     * Returns the reference name element, if available and desired to highlight only this part. This allows to limit
+     * a declaration like {@code ArrayList<T>} to only highlight the {@code ArrayList} part.
+     */
+    private fun getReferenceNameForRange(element: PsiJavaCodeReferenceElement): PsiElement? {
+        // Don't return the name if the element is part of a package or import declaration; looks nicer to highlight
+        // the entire statement than the name parts without the dots.
+        // todo lj: Can we detect a fqn and highlight it as one too?
+        if (PsiTreeUtil.getParentOfType(element, PsiImportList::class.java, false) == null
+            && PsiTreeUtil.getParentOfType(element, PsiPackageStatement::class.java, false) == null) {
+            return element.referenceNameElement
+        }
+        return null
     }
 
     private fun resolveQualifiedName(element: PsiJavaCodeReferenceElement): String? {
@@ -49,28 +70,39 @@ class PackageHighlighter : Annotator {
     }
 
     private fun isInTargetContext(elem: PsiJavaCodeReferenceElement): Boolean {
-        val containingMethod = PsiTreeUtil.getParentOfType<PsiMethod?>(elem, PsiMethod::class.java, false)
+        return true
+
+        // todo lj: remove this? Or try to skip Class.method() calls?
+        val containingMethod = PsiTreeUtil.getParentOfType(elem, PsiMethod::class.java, false)
         if (containingMethod != null) {
-            val returnType = containingMethod.getReturnTypeElement()
-            if (returnType != null && PsiTreeUtil.isAncestor(returnType, elem, false)) return true
+            val returnType = containingMethod.returnTypeElement
+            if (returnType != null && PsiTreeUtil.isAncestor(returnType, elem, false)) {
+                return true
+            }
 
-            val param = PsiTreeUtil.getParentOfType<PsiParameter?>(elem, PsiParameter::class.java, false)
-            if (param != null && param.getDeclarationScope() === containingMethod) return true
-
-            val throwsList = PsiTreeUtil.getParentOfType<PsiReferenceList?>(elem, PsiReferenceList::class.java, false)
-            if (throwsList != null && throwsList.getRole() == PsiReferenceList.Role.THROWS_LIST
-                && throwsList.getParent() === containingMethod) {
+            val param = PsiTreeUtil.getParentOfType(elem, PsiParameter::class.java, false)
+            if (param != null && param.declarationScope === containingMethod) {
                 return true
             }
         }
 
-        val catchParam = PsiTreeUtil.getParentOfType<PsiParameter?>(elem, PsiParameter::class.java, false)
-        if (catchParam != null && catchParam.getDeclarationScope() is PsiCatchSection) {
+        val catchParam = PsiTreeUtil.getParentOfType(elem, PsiParameter::class.java, false)
+        if (catchParam != null && catchParam.declarationScope is PsiCatchSection) {
             return true
         }
 
-        val refList = PsiTreeUtil.getParentOfType<PsiReferenceList?>(elem, PsiReferenceList::class.java, false)
-        if (refList != null && refList.getRole() == PsiReferenceList.Role.THROWS_LIST) {
+        val field = PsiTreeUtil.getParentOfType(elem, PsiField::class.java, false)
+        if (field != null) {
+            return true
+        }
+
+        val importList = PsiTreeUtil.getParentOfType(elem, PsiImportList::class.java, false)
+        if (importList != null) {
+            return true
+        }
+
+        val refList = PsiTreeUtil.getParentOfType(elem, PsiReferenceList::class.java, false)
+        if (refList != null) {
             return true
         }
 
