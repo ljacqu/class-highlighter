@@ -14,26 +14,34 @@ import java.awt.Font
 class PackageHighlighter : Annotator {
 
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
-        if (element !is PsiJavaCodeReferenceElement) return
-        if (!isInTargetContext(element)) return
-        val qualifier = resolveQualifiedName(element)
+        if (element is PsiImportStatement) {
+            annotateIfQualifiedNameMatches(element, holder, element.qualifiedName)
+        } else if (element is PsiPackageStatement) {
+            annotateIfQualifiedNameMatches(element, holder, element.packageName)
+        } else if (element is PsiJavaCodeReferenceElement) {
+            if (PsiTreeUtil.getParentOfType(element, PsiImportStatement::class.java, false) != null
+                || PsiTreeUtil.getParentOfType(element, PsiPackageStatement::class.java, false) != null) {
+                return // PsiImportStatement & PsiPackageStatement are handled as a whole
+            }
 
-        if (qualifier != null && qualifier.startsWith("java.util")) {
-            // Build TextAttributes with background color; keep foreground null so it doesn't change text color.
+            if (!isInTargetContext(element)) return
+            annotateIfQualifiedNameMatches(element, holder, resolveQualifiedName(element))
+        }
+    }
+
+    private fun annotateIfQualifiedNameMatches(element: PsiElement, holder: AnnotationHolder, qualifiedName: String?) {
+        if (qualifiedName?.startsWith("java.util") == true) {
             val bg = Color(0xE2F0D9)
             val attrs = TextAttributes(null, bg, null, null, Font.PLAIN)
-
-            val referenceNameElem = getReferenceNameForRange(element)
-            if (referenceNameElem != null) {
-                holder.newAnnotation(HighlightSeverity.INFORMATION, "Java.util class")
-                    .enforcedTextAttributes(attrs)
-                    .range(referenceNameElem.textRange)
-                    .create()
-            } else {
-                holder.newAnnotation(HighlightSeverity.INFORMATION, "Java.util class")
-                    .enforcedTextAttributes(attrs)
-                    .create()
+            val annotationBuilder = holder.newAnnotation(HighlightSeverity.INFORMATION, "Java.util class")
+                .enforcedTextAttributes(attrs)
+            if (element is PsiJavaCodeReferenceElement) {
+                val referenceNameElem = getReferenceNameForRange(element)
+                if (referenceNameElem != null) {
+                    annotationBuilder.range(referenceNameElem.textRange)
+                }
             }
+            annotationBuilder.create()
         }
     }
 
@@ -42,14 +50,8 @@ class PackageHighlighter : Annotator {
      * a declaration like {@code ArrayList<T>} to only highlight the {@code ArrayList} part.
      */
     private fun getReferenceNameForRange(element: PsiJavaCodeReferenceElement): PsiElement? {
-        // Don't return the name if the element is part of a package or import declaration; looks nicer to highlight
-        // the entire statement than the name parts without the dots.
         // todo lj: Can we detect a fqn and highlight it as one too?
-        if (PsiTreeUtil.getParentOfType(element, PsiImportList::class.java, false) == null
-            && PsiTreeUtil.getParentOfType(element, PsiPackageStatement::class.java, false) == null) {
-            return element.referenceNameElement
-        }
-        return null
+        return element.referenceNameElement
     }
 
     private fun resolveQualifiedName(element: PsiJavaCodeReferenceElement): String? {
@@ -96,8 +98,8 @@ class PackageHighlighter : Annotator {
             return true
         }
 
-        val importList = PsiTreeUtil.getParentOfType(elem, PsiImportList::class.java, false)
-        if (importList != null) {
+        val importStatement = PsiTreeUtil.getParentOfType(elem, PsiImportStatement::class.java, false)
+        if (importStatement != null) {
             return true
         }
 
