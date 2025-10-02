@@ -1,8 +1,11 @@
 package com.github.ljacqu.ijpackagehighlighter.startup
+import com.github.ljacqu.ijpackagehighlighter.services.HighlightSettings
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
+import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.editor.markup.TextAttributes
+import com.intellij.openapi.project.Project
 import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil
 import java.awt.Color
@@ -12,6 +15,8 @@ import java.awt.Font
  * Annotates Java type references that appear in method signatures and catch clauses.
  */
 class PackageHighlighter : Annotator {
+
+    private var rules: Map<String, HighlightSettings.HighlightRule>? = null
 
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         when (element) {
@@ -29,9 +34,34 @@ class PackageHighlighter : Annotator {
         }
     }
 
+    private fun loadRules(project: Project): Map<String, HighlightSettings.HighlightRule> {
+        val state = project.getService(HighlightSettings::class.java).state
+
+        val rules = HashMap<String, HighlightSettings.HighlightRule>()
+        state.groups.forEach { rules[it.prefix] = it }
+        this.rules = rules
+        project.thisLogger().info("Loaded ${rules.size} rules")
+        return rules
+    }
+
+    private fun getRuleForQualifiedName(element: PsiElement,
+                                        qualifiedName: String?): HighlightSettings.HighlightRule? {
+        if (qualifiedName == null) {
+            return null
+        }
+        val rules: Map<String, HighlightSettings.HighlightRule> = this.rules ?: loadRules(element.project)
+        for (entry in rules) {
+            if (qualifiedName.startsWith(entry.key)) {
+                return entry.value
+            }
+        }
+        return null
+    }
+
     private fun annotateIfQualifiedNameMatches(element: PsiElement, holder: AnnotationHolder, qualifiedName: String?) {
-        if (qualifiedName?.startsWith("java.util") == true) {
-            val bg = Color(0xE2F0D9)
+        val rule = getRuleForQualifiedName(element, qualifiedName)
+        if (rule != null) {
+            val bg = Color(rule.rgb)
             val attrs = TextAttributes(null, bg, null, null, Font.PLAIN)
             val annotationBuilder = holder.newAnnotation(HighlightSeverity.INFORMATION, "Java.util class")
                 .enforcedTextAttributes(attrs)

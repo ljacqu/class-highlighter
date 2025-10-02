@@ -8,6 +8,12 @@
     <depends>com.intellij.java</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <annotator language="JAVA" implementationClass="com.github.ljacqu.ijpackagehighlighter.startup.PackageHighlighter" />
+        <annotator language="JAVA"
+                   implementationClass="com.github.ljacqu.ijpackagehighlighter.startup.PackageHighlighter"/>
+        <projectConfigurable id="package.highlighter"
+                             displayName="Package-based type highlighter"
+                             parentId="editor"
+                             instance="com.github.ljacqu.ijpackagehighlighter.services.HighlightSettingsConfigurator"/>
+        <projectService serviceImplementation="com.github.ljacqu.ijpackagehighlighter.services.HighlightSettings"/>
     </extensions>
 </idea-plugin>
