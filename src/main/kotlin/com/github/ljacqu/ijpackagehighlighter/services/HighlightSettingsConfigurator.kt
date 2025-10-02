@@ -1,24 +1,30 @@
 package com.github.ljacqu.ijpackagehighlighter.services
 
 import com.intellij.openapi.options.Configurable
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsContexts
 import javax.swing.JComponent
 
-class HighlightSettingsConfigurator : Configurable {
+class HighlightSettingsConfigurator(private val project: Project) : Configurable {
 
-    override fun getDisplayName(): @NlsContexts.ConfigurableName String? {
-        TODO("Not yet implemented")
-    }
+    private var component: AppSettingsComponent? = null
+
+    override fun getDisplayName(): String = "Package Highlighting"
 
     override fun createComponent(): JComponent? {
-        TODO("Not yet implemented")
+        val component = AppSettingsComponent()
+        this.component = component
+        return component.panel
     }
 
     override fun isModified(): Boolean {
-        TODO("Not yet implemented")
+        return false // todo
     }
 
     override fun apply() {
-        TODO("Not yet implemented")
+        val s = project.getService(HighlightSettings::class.java)
+        // todo
     }
+
+
 }
