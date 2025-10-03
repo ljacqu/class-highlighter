@@ -1,4 +1,5 @@
 package com.github.ljacqu.ijpackagehighlighter.startup
+
 import com.github.ljacqu.ijpackagehighlighter.services.HighlightSettings
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
@@ -40,7 +41,7 @@ class PackageHighlighter : Annotator {
         val rules = HashMap<String, HighlightSettings.HighlightRule>()
         state.groups.forEach { rules[it.prefix] = it }
         this.rules = rules
-        project.thisLogger().info("Loaded ${rules.size} rules")
+        project.thisLogger().info("Loaded ${rules.size} highlight rules")
         return rules
     }
 
@@ -49,7 +50,7 @@ class PackageHighlighter : Annotator {
         if (qualifiedName == null) {
             return null
         }
-        val rules: Map<String, HighlightSettings.HighlightRule> = this.rules ?: loadRules(element.project)
+        val rules = this.rules ?: loadRules(element.project)
         for (entry in rules) {
             if (qualifiedName.startsWith(entry.key)) {
                 return entry.value

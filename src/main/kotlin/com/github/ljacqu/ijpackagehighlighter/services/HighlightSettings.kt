@@ -4,9 +4,14 @@ import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.SettingsCategory
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
+import com.intellij.util.ui.EditableModel
 import com.intellij.util.xmlb.XmlSerializerUtil
 
-@State(name = "HighlightSettings", category = SettingsCategory.PLUGINS, storages = [Storage("package-highlighter.xml")])
+@State(
+    name = "com.github.ljacqu.ijpackagehighlighter.HighlightSettings",
+    category = SettingsCategory.PLUGINS,
+    storages = [Storage("package-highlighter.xml")]
+)
 class HighlightSettings : PersistentStateComponent<HighlightSettings.State> {
 
     private val state: State = State()

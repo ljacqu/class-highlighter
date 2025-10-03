@@ -12,7 +12,8 @@ class HighlightSettingsConfigurator(private val project: Project) : Configurable
     override fun getDisplayName(): String = "Package Highlighting"
 
     override fun createComponent(): JComponent? {
-        val component = AppSettingsComponent()
+        val state = project.getService(HighlightSettings::class.java).state
+        val component = AppSettingsComponent(state)
         this.component = component
         return component.panel
     }
@@ -22,7 +23,9 @@ class HighlightSettingsConfigurator(private val project: Project) : Configurable
     }
 
     override fun apply() {
-        val s = project.getService(HighlightSettings::class.java)
+        val state = project.getService(HighlightSettings::class.java).state
+
+
         // todo
     }
 
