@@ -1,42 +1,37 @@
 package com.github.ljacqu.ijpackagehighlighter.services
 
+import com.intellij.ui.components.FixedColumnsModel
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBLabel
-import com.intellij.ui.components.JBList
 import com.intellij.ui.components.JBTextField
+import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.EditableModel
 import com.intellij.util.ui.FormBuilder
 import javax.swing.AbstractListModel
-import javax.swing.DefaultListModel
 import javax.swing.JComponent
 import javax.swing.JPanel
-import javax.swing.ListModel
-import javax.swing.event.ListDataListener
 
 class AppSettingsComponent {
 
     val panel: JPanel?
     private val myUserNameText = JBTextField()
     private val myIdeaUserStatus = JBCheckBox("IntelliJ IDEA user")
-    private val rulesList = JBList(HighlightRulesModel())
+    private val rulesModel = HighlightRulesModel()
+    private val rulesTable = JBTable(HighlightRulesTable(rulesModel))
 
     constructor(state: HighlightSettings.State) {
-        // rulesList.model = DefaultListModel()
-
-        rulesList.setListData(
-            state.groups
-                .map { HighlightRuleModel(it) }
-                .toTypedArray()
-        )
-        rulesList.cellRenderer = HighlightRuleRenderer()
+        val rulesModel = HighlightRulesModel()
+        state.groups.forEach {
+            rulesModel.addRow(HighlightRuleModel(it))
+        }
     }
 
     init {
         this.panel = FormBuilder.createFormBuilder()
             .addLabeledComponent(JBLabel("User name:"), myUserNameText, 1, false)
             .addComponent(myIdeaUserStatus, 1)
-            //.addComponentFillVertically(JPanel(), 0)
-            .addComponent(rulesList)
+            .addComponent(rulesTable)
+            .addComponentFillVertically(JPanel(), 0)
             .getPanel()
     }
 
@@ -56,9 +51,24 @@ class AppSettingsComponent {
             myIdeaUserStatus.setSelected(newStatus)
         }
 
+    class HighlightRulesTable(model: HighlightRulesModel) : FixedColumnsModel(model, 2) {
+
+        override fun getColumnName(column: Int): String? {
+            return when (column) {
+                0 -> "Prefix"
+                1 -> "Color"
+                else -> ""
+            }
+        }
+    }
+
     class HighlightRulesModel : AbstractListModel<HighlightRuleModel>(), EditableModel {
 
         private val listOfRules = mutableListOf<HighlightRuleModel>()
+
+        fun addRow(model: HighlightRuleModel) {
+            listOfRules.add(model)
+        }
 
         override fun addRow() {
             listOfRules.add(HighlightRuleModel())
