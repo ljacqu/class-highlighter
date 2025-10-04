@@ -34,7 +34,8 @@ class HighlightSettings : PersistentStateComponent<HighlightSettings.State> {
         // needed for XML deserialization
         internal constructor()
 
-        internal constructor(prefix: String, rgb: Int) {
+        internal constructor(name: String, prefix: String, rgb: Int) {
+            this.name = name
             this.prefix = prefix
             this.rgb = rgb
         }
@@ -58,9 +59,9 @@ class HighlightSettings : PersistentStateComponent<HighlightSettings.State> {
 
         init {
             if (rules.isEmpty()) {
-                rules.add(HighlightRule("java.util.", 0xFFF2CC)) // soft beige
-                rules.add(HighlightRule("jdk.internal.", 0xE2F0D9)) // soft green
-                rules.add(HighlightRule("java.lang.", 0xDDEBF7)) // pale blue
+                rules.add(HighlightRule("Java util", "java.util.", 0xFFF2CC)) // soft beige
+                rules.add(HighlightRule("JDK internal", "jdk.internal.", 0xE2F0D9)) // soft green
+                rules.add(HighlightRule("Java lang", "java.lang.", 0xDDEBF7)) // pale blue
 
                 sectionsToHighlight.addAll(Section.entries.toList())
             }

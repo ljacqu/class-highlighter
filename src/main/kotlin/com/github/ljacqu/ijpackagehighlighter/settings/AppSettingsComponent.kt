@@ -41,7 +41,7 @@ class AppSettingsComponent {
     }
 
     private fun createRulesModel(): ListTableModel<Rule> {
-        val cols = arrayOf(PrefixColumn(), ColorColumn())
+        val cols = arrayOf(NameColumn(), PrefixColumn(), ColorColumn())
         return ListTableModel<Rule>(*cols)
     }
 
@@ -63,17 +63,18 @@ class AppSettingsComponent {
         // set renderer/editor for color column (it's index 1)
         val colorRenderer = ColorCellRenderer()
         table.setDefaultRenderer(Int::class.java, colorRenderer) // fallback
-        table.columnModel.getColumn(1).cellRenderer = colorRenderer
-        table.columnModel.getColumn(1).cellEditor = ColorCellEditor()
+        table.columnModel.getColumn(2).cellRenderer = colorRenderer
+        table.columnModel.getColumn(2).cellEditor = ColorCellEditor()
 
         // ensure prefix column uses text field editor (default works but explicit is fine)
+        table.columnModel.getColumn(1).cellEditor = PrefixCellEditor()
         table.columnModel.getColumn(0).cellEditor = PrefixCellEditor()
 
         // toolbar for add/remove/move
         val decorator = ToolbarDecorator.createDecorator(table)
         decorator.setAddAction {
-            // add default item and start editing prefix cell
-            rulesModel.addRow(Rule("", DEFAULT_COLOR))
+            // add default item and start editing first cell
+            rulesModel.addRow(Rule("", "", DEFAULT_COLOR))
             val newRow = rulesModel.rowCount - 1
             table.selectionModel.setSelectionInterval(newRow, newRow)
             table.editCellAt(newRow, 0)
@@ -132,12 +133,29 @@ class AppSettingsComponent {
         while (rulesModel.rowCount > 0) rulesModel.removeRow(0)
         // add
         rules.forEach {
-            rulesModel.addRow(Rule(it.prefix, it.rgb))
+            rulesModel.addRow(Rule(it))
         }
     }
 
     /** Highlight rule model. */
-    data class Rule(var prefix: String = "", var rgb: Int = DEFAULT_COLOR)
+    data class Rule(var name: String = "", var prefix: String = "", var rgb: Int = DEFAULT_COLOR) {
+
+        fun toHighlightRule(): HighlightSettings.HighlightRule = HighlightSettings.HighlightRule(name, prefix, rgb)
+
+        constructor(highlightRule: HighlightSettings.HighlightRule)
+                : this(highlightRule.name, highlightRule.prefix, highlightRule.rgb)
+    }
+
+    /** Name column definition. */
+    class NameColumn : ColumnInfo<Rule, String>("Name") {
+
+        override fun valueOf(item: Rule) = item.name
+        override fun isCellEditable(item: Rule) = true
+
+        override fun setValue(item: Rule, value: String?) {
+            item.name = value ?: ""
+        }
+    }
 
     /** Prefix column definition. */
     class PrefixColumn : ColumnInfo<Rule, String>("Prefix") {

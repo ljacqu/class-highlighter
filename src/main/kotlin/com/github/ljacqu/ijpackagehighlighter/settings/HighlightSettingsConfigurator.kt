@@ -35,7 +35,7 @@ class HighlightSettingsConfigurator(private val project: Project) : Configurable
         val persistedRules = state.rules
         val uiRules = component.getRules()
         if (persistedRules.size != uiRules.size) return true
-        return persistedRules.map { AppSettingsComponent.Rule(it.prefix, it.rgb) } != uiRules
+        return persistedRules.map { AppSettingsComponent.Rule(it) } != uiRules
     }
 
     override fun apply() {
@@ -43,7 +43,7 @@ class HighlightSettingsConfigurator(private val project: Project) : Configurable
         val newSections = settingsComponent?.getSections() ?: emptySet()
         state.sectionsToHighlight = newSections.toMutableSet()
         val newRules = settingsComponent?.getRules() ?: emptyList()
-        state.rules = newRules.map { HighlightSettings.HighlightRule(it.prefix, it.rgb) }.toMutableList()
+        state.rules = newRules.map { it.toHighlightRule() }.toMutableList()
         project.getService(HighlightSettingsService::class.java).reload()
     }
 

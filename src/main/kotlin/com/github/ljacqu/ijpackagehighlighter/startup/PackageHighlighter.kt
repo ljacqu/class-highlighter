@@ -2,6 +2,7 @@ package com.github.ljacqu.ijpackagehighlighter.startup
 
 import com.github.ljacqu.ijpackagehighlighter.services.HighlightSettings.Section
 import com.github.ljacqu.ijpackagehighlighter.services.HighlightSettingsService
+import com.intellij.lang.annotation.AnnotationBuilder
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
@@ -22,6 +23,7 @@ import java.awt.Font
  */
 class PackageHighlighter : Annotator {
 
+    private val debugShowSection = false // TODO: Remove this
     private var settingsService: HighlightSettingsService? = null
 
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
@@ -61,11 +63,11 @@ class PackageHighlighter : Annotator {
         if (rule != null) {
             val bg = Color(rule.rgb)
             val attrs = TextAttributes(null, bg, null, null, Font.PLAIN)
-            val name = when(element) { // TODO: Replace. Introduce name in settings?
+            val sectionDescription = when(element) {
                 is PsiJavaCodeReferenceElement -> settingsService!!.determineReferenceElementType(element).name
                 else -> "Highlighted class"
             }
-            val annotationBuilder = holder.newAnnotation(HighlightSeverity.INFORMATION, name)
+            val annotationBuilder = newAnnotation(holder, if (debugShowSection) sectionDescription else rule.name)
                 .enforcedTextAttributes(attrs)
             if (element is PsiJavaCodeReferenceElement) {
                 val referenceNameElem = getReferenceNameForRange(element)
@@ -75,6 +77,13 @@ class PackageHighlighter : Annotator {
             }
             annotationBuilder.create()
         }
+    }
+
+    private fun newAnnotation(holder: AnnotationHolder, name: String?): AnnotationBuilder {
+        if (name == null || name.isEmpty()) {
+            return holder.newSilentAnnotation(HighlightSeverity.INFORMATION)
+        }
+        return holder.newAnnotation(HighlightSeverity.INFORMATION, name)
     }
 
     /**
