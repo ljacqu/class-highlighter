@@ -12,15 +12,10 @@ import com.intellij.psi.PsiReferenceList
 import com.intellij.psi.javadoc.PsiDocComment
 import com.intellij.psi.util.PsiTreeUtil
 
-class HighlightSettingsService {
+class HighlightSettingsService(project: Project) {
 
-    private val state: HighlightSettings.State
-    private var rules: Map<String, HighlightSettings.HighlightRule>
-
-    constructor(project: Project) {
-        state = project.getService(HighlightSettings::class.java).state
-        rules = initRules()
-    }
+    private val state: HighlightSettings.State = project.getService(HighlightSettings::class.java).state
+    private var rules: Map<String, HighlightSettings.HighlightRule> = initRules()
 
     fun shouldHighlight(section: Section): Boolean {
         return state.sectionsToHighlight.contains(section)

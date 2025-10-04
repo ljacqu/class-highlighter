@@ -63,7 +63,7 @@ class PackageHighlighter : Annotator {
         if (rule != null) {
             val bg = Color(rule.rgb)
             val attrs = TextAttributes(null, bg, null, null, Font.PLAIN)
-            val sectionDescription = when(element) {
+            val sectionDescription = when (element) {
                 is PsiJavaCodeReferenceElement -> settingsService!!.determineReferenceElementType(element).name
                 else -> "Highlighted class"
             }
@@ -80,7 +80,7 @@ class PackageHighlighter : Annotator {
     }
 
     private fun newAnnotation(holder: AnnotationHolder, name: String?): AnnotationBuilder {
-        if (name == null || name.isEmpty()) {
+        if (name.isNullOrEmpty()) {
             return holder.newSilentAnnotation(HighlightSeverity.INFORMATION)
         }
         return holder.newAnnotation(HighlightSeverity.INFORMATION, name)

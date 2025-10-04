@@ -26,13 +26,13 @@ import javax.swing.table.TableCellRenderer
 /**
  * UI component for the highlight settings.
  */
-class AppSettingsComponent {
+class AppSettingsComponent() {
 
-    val sectionCheckBoxes: List<SectionCheckBox>
-    val rulesModel: ListTableModel<Rule>
+    private val sectionCheckBoxes: List<SectionCheckBox>
+    private val rulesModel: ListTableModel<Rule>
     val mainPanel: JComponent
 
-    constructor() {
+    init {
         sectionCheckBoxes = createSectionCheckBoxes()
         val checkBoxesPanel = createSectionPanel(sectionCheckBoxes)
         rulesModel = createRulesModel()
@@ -58,7 +58,7 @@ class AppSettingsComponent {
         val table = TableView(rulesModel)
         table.setShowGrid(false)
         table.tableHeader.reorderingAllowed = false
-        table.setRowHeight(22)
+        table.rowHeight = 22
 
         // set renderer/editor for color column (it's index 1)
         val colorRenderer = ColorCellRenderer()
@@ -105,7 +105,7 @@ class AppSettingsComponent {
 
     private fun createMainPanel(checkBoxesPanel: JPanel, rulesPanel: JPanel): JPanel {
         val mainPanel = JPanel()
-        mainPanel.setLayout(BoxLayout(mainPanel, BoxLayout.Y_AXIS))
+        mainPanel.layout = BoxLayout(mainPanel, BoxLayout.Y_AXIS)
         mainPanel.add(checkBoxesPanel)
         mainPanel.add(rulesPanel)
         return mainPanel
@@ -118,7 +118,7 @@ class AppSettingsComponent {
 
     fun setSections(sections: Set<HighlightSettings.Section>) {
         sectionCheckBoxes.forEach {
-            it.setSelected(sections.contains(it.section))
+            it.isSelected = sections.contains(it.section)
         }
     }
 
