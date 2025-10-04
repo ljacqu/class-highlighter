@@ -1,4 +1,5 @@
 package com.github.ljacqu.ijpackagehighlighter.startup
+
 import com.github.ljacqu.ijpackagehighlighter.services.HighlightSettings
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
@@ -6,7 +7,16 @@ import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.openapi.project.Project
-import com.intellij.psi.*
+import com.intellij.psi.PsiCatchSection
+import com.intellij.psi.PsiClass
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiField
+import com.intellij.psi.PsiImportStatement
+import com.intellij.psi.PsiJavaCodeReferenceElement
+import com.intellij.psi.PsiMethod
+import com.intellij.psi.PsiPackageStatement
+import com.intellij.psi.PsiParameter
+import com.intellij.psi.PsiReferenceList
 import com.intellij.psi.util.PsiTreeUtil
 import java.awt.Color
 import java.awt.Font
@@ -38,9 +48,9 @@ class PackageHighlighter : Annotator {
         val state = project.getService(HighlightSettings::class.java).state
 
         val rules = HashMap<String, HighlightSettings.HighlightRule>()
-        state.groups.forEach { rules[it.prefix] = it }
+        state.rules.forEach { rules[it.prefix] = it }
         this.rules = rules
-        project.thisLogger().info("Loaded ${rules.size} rules")
+        project.thisLogger().info("Loaded ${rules.size} highlight rules")
         return rules
     }
 
@@ -49,7 +59,7 @@ class PackageHighlighter : Annotator {
         if (qualifiedName == null) {
             return null
         }
-        val rules: Map<String, HighlightSettings.HighlightRule> = this.rules ?: loadRules(element.project)
+        val rules = this.rules ?: loadRules(element.project)
         for (entry in rules) {
             if (qualifiedName.startsWith(entry.key)) {
                 return entry.value

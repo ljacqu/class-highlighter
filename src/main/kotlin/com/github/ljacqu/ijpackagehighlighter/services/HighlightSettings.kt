@@ -6,7 +6,11 @@ import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.util.xmlb.XmlSerializerUtil
 
-@State(name = "HighlightSettings", category = SettingsCategory.PLUGINS, storages = [Storage("package-highlighter.xml")])
+@State(
+    name = "com.github.ljacqu.ijpackagehighlighter.HighlightSettings",
+    category = SettingsCategory.PLUGINS,
+    storages = [Storage("package-highlighter.xml")]
+)
 class HighlightSettings : PersistentStateComponent<HighlightSettings.State> {
 
     private val state: State = State()
@@ -32,14 +36,28 @@ class HighlightSettings : PersistentStateComponent<HighlightSettings.State> {
         }
     }
 
+    enum class Section {
+        PACKAGE,
+        IMPORT,
+        JAVADOC,
+        METHOD_SIGNATURE,
+        FIELD_TYPE,
+        OTHER
+    }
+
     class State {
-        val groups: MutableList<HighlightRule> = ArrayList()
+
+        // Note: Values must be kept as var here so they're picked up by the serializer properly
+        var rules: MutableList<HighlightRule> = ArrayList()
+        var sectionsToHighlight: MutableSet<Section> = mutableSetOf()
 
         init {
-            if (groups.isEmpty()) {
-                groups.add(HighlightRule("java.util.", 0xFFF2CC)) // soft beige
-                groups.add(HighlightRule("jdk.internal.", 0xE2F0D9)) // soft green
-                groups.add(HighlightRule("java.lang.", 0xDDEBF7)) // pale blue
+            if (rules.isEmpty()) {
+                rules.add(HighlightRule("java.util.", 0xFFF2CC)) // soft beige
+                rules.add(HighlightRule("jdk.internal.", 0xE2F0D9)) // soft green
+                rules.add(HighlightRule("java.lang.", 0xDDEBF7)) // pale blue
+
+                sectionsToHighlight.addAll(Section.entries.toList())
             }
         }
     }
