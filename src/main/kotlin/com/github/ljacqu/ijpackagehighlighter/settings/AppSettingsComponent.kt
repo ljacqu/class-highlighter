@@ -26,7 +26,7 @@ import javax.swing.table.TableCellRenderer
 /**
  * UI component for the highlight settings.
  */
-class AppSettingsComponent() {
+class AppSettingsComponent {
 
     private val sectionCheckBoxes: List<SectionCheckBox>
     private val rulesModel: ListTableModel<Rule>

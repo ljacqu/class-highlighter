@@ -32,6 +32,7 @@ class HighlightSettings : PersistentStateComponent<HighlightSettings.State> {
         var rgb: Int = DEFAULT_COLOR
 
         // needed for XML deserialization
+        @Suppress("unused")
         internal constructor()
 
         internal constructor(name: String, prefix: String, rgb: Int) {
