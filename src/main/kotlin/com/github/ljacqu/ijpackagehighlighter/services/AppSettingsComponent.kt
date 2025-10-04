@@ -1,16 +1,20 @@
 package com.github.ljacqu.ijpackagehighlighter.services
 
 import com.intellij.ui.ToolbarDecorator
+import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.table.TableView
 import com.intellij.util.ui.ColumnInfo
+import com.intellij.util.ui.FormBuilder
 import com.intellij.util.ui.ListTableModel
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Component
 import java.awt.Dimension
 import javax.swing.AbstractCellEditor
+import javax.swing.BoxLayout
 import javax.swing.JButton
 import javax.swing.JColorChooser
+import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.JTable
 import javax.swing.JTextField
@@ -22,17 +26,32 @@ import javax.swing.table.TableCellRenderer
  */
 class AppSettingsComponent {
 
+    val sectionCheckBoxes: List<SectionCheckBox>
     val rulesModel: ListTableModel<Rule>
-    val panel: JPanel
+    val mainPanel: JComponent
 
     constructor() {
+        sectionCheckBoxes = createCheckBoxes()
+        val checkBoxesPanel = createSectionPanel(sectionCheckBoxes)
         rulesModel = createRulesModel()
-        panel = createHighlightRulesPanel(rulesModel)
+        val rulesPanel = createHighlightRulesPanel(rulesModel)
+
+        val mainPanel = JPanel()
+        mainPanel.setLayout(BoxLayout(mainPanel, BoxLayout.Y_AXIS))
+        mainPanel.add(checkBoxesPanel)
+        mainPanel.add(rulesPanel)
+        this.mainPanel = mainPanel
     }
 
     private fun createRulesModel(): ListTableModel<Rule> {
         val cols = arrayOf(PrefixColumn(), ColorColumn())
         return ListTableModel<Rule>(*cols)
+    }
+
+    private fun createSectionPanel(sectionCheckBoxes: List<SectionCheckBox>): JPanel {
+        val buttonPanel = FormBuilder.createFormBuilder()
+        sectionCheckBoxes.forEach { box -> buttonPanel.addComponent(box) }
+        return buttonPanel.panel
     }
 
     /**
@@ -74,10 +93,28 @@ class AppSettingsComponent {
         return panel
     }
 
-    fun getRules(): List<HighlightSettings.HighlightRule> =
+    private fun createCheckBoxes(): List<SectionCheckBox> {
+        return listOf(
+            SectionCheckBox(HighlightSettings.Section.PACKAGE, "Highlight package declarations"),
+            SectionCheckBox(HighlightSettings.Section.IMPORT, "Highlight import statements"),
+            SectionCheckBox(HighlightSettings.Section.JAVADOC, "Highlight classes in JavaDoc"),
+        )
+    }
+
+    fun getSections(): Set<HighlightSettings.Section> =
+        sectionCheckBoxes.filter { it.isSelected }
+            .map { it.section }
+            .toSet()
+
+    fun setSections(sections: Set<HighlightSettings.Section>) {
+        sectionCheckBoxes.forEach {
+            it.setSelected(sections.contains(it.section))
+        }
+    }
+
+    fun getRules(): List<Rule> =
         (0 until rulesModel.rowCount).map { row ->
-            val item = rulesModel.getItem(row)
-            HighlightSettings.HighlightRule(item.prefix, item.rgb)
+            rulesModel.getItem(row)
         }
 
     // replace UI rows from persisted data
@@ -190,5 +227,9 @@ class AppSettingsComponent {
             }
             return button
         }
+    }
+
+    class SectionCheckBox(val section: HighlightSettings.Section, name: String) : JBCheckBox(name) {
+
     }
 }

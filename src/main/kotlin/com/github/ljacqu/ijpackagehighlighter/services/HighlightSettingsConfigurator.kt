@@ -1,5 +1,6 @@
 package com.github.ljacqu.ijpackagehighlighter.services
 
+import com.intellij.codeInsight.util.HighlightVisitorScope
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
 import javax.swing.JComponent
@@ -14,30 +15,40 @@ class HighlightSettingsConfigurator(private val project: Project) : Configurable
     // createComponent() does not need to add any data, as reset() is called right after.
     override fun createComponent(): JComponent {
         if (settingsComponent == null) {
-            val state = project.getService(HighlightSettings::class.java).state
             val component = AppSettingsComponent()
             this.settingsComponent = component
         }
-        return settingsComponent!!.panel
+        return settingsComponent!!.mainPanel
     }
 
     override fun isModified(): Boolean {
         val state = project.getService(HighlightSettings::class.java).state
-        val persisted = state.groups
-        val uiRules = settingsComponent?.getRules() ?: return false
-        if (persisted.size != uiRules.size) return true
-        return persisted.zip(uiRules).any { (p, u) -> p.prefix != u.prefix || p.rgb != u.rgb }
+        val component = settingsComponent ?: return false
+
+        // Check if sections have changed
+        if (component.getSections() != state.sectionsToHighlight) {
+            return true
+        }
+
+        // Check if rules have changed
+        val persistedRules = state.rules
+        val uiRules = component.getRules()
+        if (persistedRules.size != uiRules.size) return true
+        return persistedRules.map { AppSettingsComponent.Rule(it.prefix, it.rgb) } != uiRules
     }
 
     override fun apply() {
         val state = project.getService(HighlightSettings::class.java).state
-        val newGroups = settingsComponent?.getRules() ?: emptyList()
-        state.setRules(newGroups)
+        val newSections = settingsComponent?.getSections() ?: emptySet()
+        state.sectionsToHighlight = newSections.toMutableSet()
+        val newRules = settingsComponent?.getRules() ?: emptyList()
+        state.rules = newRules.map { HighlightSettings.HighlightRule(it.prefix, it.rgb) }.toMutableList()
     }
 
     override fun reset() {
         val state = project.getService(HighlightSettings::class.java).state
-        settingsComponent?.setRules(state.groups)
+        settingsComponent?.setSections(state.sectionsToHighlight)
+        settingsComponent?.setRules(state.rules)
     }
 
     override fun disposeUIResources() {
