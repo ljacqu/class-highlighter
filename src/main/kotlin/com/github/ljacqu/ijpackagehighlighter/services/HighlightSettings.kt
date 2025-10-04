@@ -38,7 +38,7 @@ class HighlightSettings : PersistentStateComponent<HighlightSettings.State> {
     }
 
     class State {
-        val groups: MutableList<HighlightRule> = ArrayList()
+        var groups: MutableList<HighlightRule> = ArrayList()
 
         init {
             if (groups.isEmpty()) {
