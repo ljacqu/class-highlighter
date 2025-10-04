@@ -38,7 +38,8 @@ class HighlightSettings : PersistentStateComponent<HighlightSettings.State> {
     }
 
     class State {
-        var groups: MutableList<HighlightRule> = ArrayList()
+
+        val groups: MutableList<HighlightRule> = ArrayList()
 
         init {
             if (groups.isEmpty()) {
@@ -46,6 +47,11 @@ class HighlightSettings : PersistentStateComponent<HighlightSettings.State> {
                 groups.add(HighlightRule("jdk.internal.", 0xE2F0D9)) // soft green
                 groups.add(HighlightRule("java.lang.", 0xDDEBF7)) // pale blue
             }
+        }
+
+        fun setRules(newRules: List<HighlightRule>) {
+            groups.clear()
+            groups.addAll(newRules)
         }
     }
 }

@@ -30,7 +30,7 @@ class HighlightSettingsConfigurator(private val project: Project) : Configurable
     override fun apply() {
         val state = project.getService(HighlightSettings::class.java).state
         val newGroups = settingsComponent?.getRules() ?: emptyList()
-        state.groups = newGroups.toMutableList()
+        state.setRules(newGroups)
     }
 
     override fun reset() {
