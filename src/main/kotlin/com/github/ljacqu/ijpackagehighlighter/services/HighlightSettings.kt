@@ -40,8 +40,9 @@ class HighlightSettings : PersistentStateComponent<HighlightSettings.State> {
         PACKAGE,
         IMPORT,
         JAVADOC,
-        // METHOD_SIGNATURE,
-        // METHOD_CALL
+        METHOD_SIGNATURE,
+        FIELD_TYPE,
+        OTHER
     }
 
     class State {

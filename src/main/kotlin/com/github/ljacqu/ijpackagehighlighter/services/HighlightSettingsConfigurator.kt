@@ -1,6 +1,5 @@
 package com.github.ljacqu.ijpackagehighlighter.services
 
-import com.intellij.codeInsight.util.HighlightVisitorScope
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
 import javax.swing.JComponent

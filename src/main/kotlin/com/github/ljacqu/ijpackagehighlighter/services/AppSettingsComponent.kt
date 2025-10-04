@@ -31,16 +31,11 @@ class AppSettingsComponent {
     val mainPanel: JComponent
 
     constructor() {
-        sectionCheckBoxes = createCheckBoxes()
+        sectionCheckBoxes = createSectionCheckBoxes()
         val checkBoxesPanel = createSectionPanel(sectionCheckBoxes)
         rulesModel = createRulesModel()
-        val rulesPanel = createHighlightRulesPanel(rulesModel)
-
-        val mainPanel = JPanel()
-        mainPanel.setLayout(BoxLayout(mainPanel, BoxLayout.Y_AXIS))
-        mainPanel.add(checkBoxesPanel)
-        mainPanel.add(rulesPanel)
-        this.mainPanel = mainPanel
+        val rulesPanel = createRulesPanel(rulesModel)
+        mainPanel = createMainPanel(checkBoxesPanel, rulesPanel)
     }
 
     private fun createRulesModel(): ListTableModel<Rule> {
@@ -57,7 +52,7 @@ class AppSettingsComponent {
     /**
      * Create a panel containing the table + toolbar for add/remove/move.
      */
-    private fun createHighlightRulesPanel(rulesModel: ListTableModel<Rule>): JPanel {
+    private fun createRulesPanel(rulesModel: ListTableModel<Rule>): JPanel {
         val table = TableView(rulesModel)
         table.setShowGrid(false)
         table.tableHeader.reorderingAllowed = false
@@ -93,12 +88,23 @@ class AppSettingsComponent {
         return panel
     }
 
-    private fun createCheckBoxes(): List<SectionCheckBox> {
+    private fun createSectionCheckBoxes(): List<SectionCheckBox> {
         return listOf(
             SectionCheckBox(HighlightSettings.Section.PACKAGE, "Highlight package declarations"),
             SectionCheckBox(HighlightSettings.Section.IMPORT, "Highlight import statements"),
             SectionCheckBox(HighlightSettings.Section.JAVADOC, "Highlight classes in JavaDoc"),
+            SectionCheckBox(HighlightSettings.Section.METHOD_SIGNATURE, "Highlight types in method signatures"),
+            SectionCheckBox(HighlightSettings.Section.FIELD_TYPE, "Highlight field types"),
+            SectionCheckBox(HighlightSettings.Section.OTHER, "Highlight in other places"),
         )
+    }
+
+    private fun createMainPanel(checkBoxesPanel: JPanel, rulesPanel: JPanel): JPanel {
+        val mainPanel = JPanel()
+        mainPanel.setLayout(BoxLayout(mainPanel, BoxLayout.Y_AXIS))
+        mainPanel.add(checkBoxesPanel)
+        mainPanel.add(rulesPanel)
+        return mainPanel
     }
 
     fun getSections(): Set<HighlightSettings.Section> =
@@ -199,7 +205,7 @@ class AppSettingsComponent {
         }
     }
 
-    // Editor: clicking opens a JColorChooser dialog; commits chosen color
+    /** Editor: clicking opens a JColorChooser dialog. */
     class ColorCellEditor : AbstractCellEditor(), TableCellEditor {
 
         private val button = JButton("…")
@@ -229,7 +235,7 @@ class AppSettingsComponent {
         }
     }
 
-    class SectionCheckBox(val section: HighlightSettings.Section, name: String) : JBCheckBox(name) {
+    /** Checkbox that knows which section it configures. */
+    class SectionCheckBox(val section: HighlightSettings.Section, name: String) : JBCheckBox(name)
 
-    }
 }
