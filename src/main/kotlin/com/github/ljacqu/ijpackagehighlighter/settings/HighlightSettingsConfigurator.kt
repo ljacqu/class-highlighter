@@ -1,5 +1,7 @@
-package com.github.ljacqu.ijpackagehighlighter.services
+package com.github.ljacqu.ijpackagehighlighter.settings
 
+import com.github.ljacqu.ijpackagehighlighter.services.HighlightSettings
+import com.github.ljacqu.ijpackagehighlighter.services.HighlightSettingsService
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
 import javax.swing.JComponent
@@ -42,6 +44,7 @@ class HighlightSettingsConfigurator(private val project: Project) : Configurable
         state.sectionsToHighlight = newSections.toMutableSet()
         val newRules = settingsComponent?.getRules() ?: emptyList()
         state.rules = newRules.map { HighlightSettings.HighlightRule(it.prefix, it.rgb) }.toMutableList()
+        project.getService(HighlightSettingsService::class.java).reload()
     }
 
     override fun reset() {

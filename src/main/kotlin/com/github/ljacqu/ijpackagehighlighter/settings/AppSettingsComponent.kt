@@ -1,5 +1,6 @@
-package com.github.ljacqu.ijpackagehighlighter.services
+package com.github.ljacqu.ijpackagehighlighter.settings
 
+import com.github.ljacqu.ijpackagehighlighter.services.HighlightSettings
 import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.table.TableView
@@ -93,8 +94,9 @@ class AppSettingsComponent {
             SectionCheckBox(HighlightSettings.Section.PACKAGE, "Highlight package declarations"),
             SectionCheckBox(HighlightSettings.Section.IMPORT, "Highlight import statements"),
             SectionCheckBox(HighlightSettings.Section.JAVADOC, "Highlight classes in JavaDoc"),
-            SectionCheckBox(HighlightSettings.Section.METHOD_SIGNATURE, "Highlight types in method signatures"),
             SectionCheckBox(HighlightSettings.Section.FIELD_TYPE, "Highlight field types"),
+            SectionCheckBox(HighlightSettings.Section.METHOD_SIGNATURE, "Highlight types in method signatures"),
+            SectionCheckBox(HighlightSettings.Section.CATCH, "Highlight types in catch clauses"),
             SectionCheckBox(HighlightSettings.Section.OTHER, "Highlight in other places"),
         )
     }

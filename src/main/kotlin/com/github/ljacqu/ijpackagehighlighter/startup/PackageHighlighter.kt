@@ -1,22 +1,18 @@
 package com.github.ljacqu.ijpackagehighlighter.startup
 
-import com.github.ljacqu.ijpackagehighlighter.services.HighlightSettings
+import com.github.ljacqu.ijpackagehighlighter.services.HighlightSettings.Section
+import com.github.ljacqu.ijpackagehighlighter.services.HighlightSettingsService
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
-import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiCatchSection
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiField
+import com.intellij.psi.PsiIdentifier
 import com.intellij.psi.PsiImportStatement
 import com.intellij.psi.PsiJavaCodeReferenceElement
-import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiPackageStatement
-import com.intellij.psi.PsiParameter
-import com.intellij.psi.PsiReferenceList
 import com.intellij.psi.util.PsiTreeUtil
 import java.awt.Color
 import java.awt.Font
@@ -26,54 +22,50 @@ import java.awt.Font
  */
 class PackageHighlighter : Annotator {
 
-    private var rules: Map<String, HighlightSettings.HighlightRule>? = null
+    private var settingsService: HighlightSettingsService? = null
 
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
+        val service = settingsService ?: initSettingsService(element.project)
+
         when (element) {
-            is PsiImportStatement -> {
-                annotateIfQualifiedNameMatches(element, holder, element.qualifiedName)
-            }
             is PsiPackageStatement -> {
-                annotateIfQualifiedNameMatches(element, holder, element.packageName)
+                if (service.shouldHighlight(Section.PACKAGE))
+                    annotateIfQualifiedNameMatches(element, holder, element.packageName)
+            }
+            is PsiImportStatement -> {
+                if (service.shouldHighlight(Section.IMPORT))
+                    annotateIfQualifiedNameMatches(element, holder, element.qualifiedName)
             }
             is PsiJavaCodeReferenceElement -> {
                 if (isRelevantReferenceElement(element)) {
                     annotateIfQualifiedNameMatches(element, holder, resolveQualifiedName(element))
                 }
             }
-        }
-    }
-
-    private fun loadRules(project: Project): Map<String, HighlightSettings.HighlightRule> {
-        val state = project.getService(HighlightSettings::class.java).state
-
-        val rules = HashMap<String, HighlightSettings.HighlightRule>()
-        state.rules.forEach { rules[it.prefix] = it }
-        this.rules = rules
-        project.thisLogger().info("Loaded ${rules.size} highlight rules")
-        return rules
-    }
-
-    private fun getRuleForQualifiedName(element: PsiElement,
-                                        qualifiedName: String?): HighlightSettings.HighlightRule? {
-        if (qualifiedName == null) {
-            return null
-        }
-        val rules = this.rules ?: loadRules(element.project)
-        for (entry in rules) {
-            if (qualifiedName.startsWith(entry.key)) {
-                return entry.value
+            is PsiIdentifier -> {
+                val parent = element.parent
+                if (parent is PsiClass) { // public class _Name_ ...
+                    annotateIfQualifiedNameMatches(element, holder, parent.qualifiedName)
+                }
             }
         }
-        return null
+    }
+
+    private fun initSettingsService(project: Project): HighlightSettingsService {
+        val service = project.getService(HighlightSettingsService::class.java)
+        settingsService = service
+        return service
     }
 
     private fun annotateIfQualifiedNameMatches(element: PsiElement, holder: AnnotationHolder, qualifiedName: String?) {
-        val rule = getRuleForQualifiedName(element, qualifiedName)
+        val rule = settingsService!!.findRuleIfApplicable(element, qualifiedName)
         if (rule != null) {
             val bg = Color(rule.rgb)
             val attrs = TextAttributes(null, bg, null, null, Font.PLAIN)
-            val annotationBuilder = holder.newAnnotation(HighlightSeverity.INFORMATION, "Java.util class")
+            val name = when(element) { // TODO: Replace. Introduce name in settings?
+                is PsiJavaCodeReferenceElement -> settingsService!!.determineReferenceElementType(element).name
+                else -> "Highlighted class"
+            }
+            val annotationBuilder = holder.newAnnotation(HighlightSeverity.INFORMATION, name)
                 .enforcedTextAttributes(attrs)
             if (element is PsiJavaCodeReferenceElement) {
                 val referenceNameElem = getReferenceNameForRange(element)
@@ -117,43 +109,6 @@ class PackageHighlighter : Annotator {
             || PsiTreeUtil.getParentOfType(elem, PsiPackageStatement::class.java, false) != null) {
             return false
         }
-
-        return true
-
-        // todo lj: remove this? Or try to skip Class.method() calls?
-        val containingMethod = PsiTreeUtil.getParentOfType(elem, PsiMethod::class.java, false)
-        if (containingMethod != null) {
-            val returnType = containingMethod.returnTypeElement
-            if (returnType != null && PsiTreeUtil.isAncestor(returnType, elem, false)) {
-                return true
-            }
-
-            val param = PsiTreeUtil.getParentOfType(elem, PsiParameter::class.java, false)
-            if (param != null && param.declarationScope === containingMethod) {
-                return true
-            }
-        }
-
-        val catchParam = PsiTreeUtil.getParentOfType(elem, PsiParameter::class.java, false)
-        if (catchParam != null && catchParam.declarationScope is PsiCatchSection) {
-            return true
-        }
-
-        val field = PsiTreeUtil.getParentOfType(elem, PsiField::class.java, false)
-        if (field != null) {
-            return true
-        }
-
-        val importStatement = PsiTreeUtil.getParentOfType(elem, PsiImportStatement::class.java, false)
-        if (importStatement != null) {
-            return true
-        }
-
-        val refList = PsiTreeUtil.getParentOfType(elem, PsiReferenceList::class.java, false)
-        if (refList != null) {
-            return true
-        }
-
-        return false
+        return settingsService!!.highlightReferenceElement(elem)
     }
 }

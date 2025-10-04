@@ -13,7 +13,8 @@
         <projectConfigurable id="package.highlighter"
                              displayName="Class Highlight Rules"
                              parentId="editor"
-                             instance="com.github.ljacqu.ijpackagehighlighter.services.HighlightSettingsConfigurator"/>
+                             instance="com.github.ljacqu.ijpackagehighlighter.settings.HighlightSettingsConfigurator"/>
         <projectService serviceImplementation="com.github.ljacqu.ijpackagehighlighter.services.HighlightSettings"/>
+        <projectService serviceImplementation="com.github.ljacqu.ijpackagehighlighter.services.HighlightSettingsService"/>
     </extensions>
 </idea-plugin>
