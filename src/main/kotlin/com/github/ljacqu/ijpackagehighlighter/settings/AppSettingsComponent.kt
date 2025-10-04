@@ -1,5 +1,6 @@
 package com.github.ljacqu.ijpackagehighlighter.settings
 
+import com.github.ljacqu.ijpackagehighlighter.services.DEFAULT_COLOR
 import com.github.ljacqu.ijpackagehighlighter.services.HighlightSettings
 import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.components.JBCheckBox
@@ -72,7 +73,7 @@ class AppSettingsComponent {
         val decorator = ToolbarDecorator.createDecorator(table)
         decorator.setAddAction {
             // add default item and start editing prefix cell
-            rulesModel.addRow(Rule("", 0xFFFF00))
+            rulesModel.addRow(Rule("", DEFAULT_COLOR))
             val newRow = rulesModel.rowCount - 1
             table.selectionModel.setSelectionInterval(newRow, newRow)
             table.editCellAt(newRow, 0)
@@ -136,7 +137,7 @@ class AppSettingsComponent {
     }
 
     /** Highlight rule model. */
-    data class Rule(var prefix: String = "", var rgb: Int = 0xFFFF00)
+    data class Rule(var prefix: String = "", var rgb: Int = DEFAULT_COLOR)
 
     /** Prefix column definition. */
     class PrefixColumn : ColumnInfo<Rule, String>("Prefix") {
@@ -156,7 +157,7 @@ class AppSettingsComponent {
         override fun isCellEditable(item: Rule) = true
 
         override fun setValue(item: Rule, value: Int?) {
-            item.rgb = value ?: 0xFFFF00
+            item.rgb = value ?: DEFAULT_COLOR
         }
     }
 
@@ -231,7 +232,7 @@ class AppSettingsComponent {
             currentValue = when (value) {
                 is Int -> value
                 is Number -> value.toInt()
-                else -> 0xFFFFFF
+                else -> DEFAULT_COLOR
             }
             return button
         }

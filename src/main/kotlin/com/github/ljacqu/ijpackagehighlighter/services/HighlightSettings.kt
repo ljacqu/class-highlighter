@@ -6,6 +6,8 @@ import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.util.xmlb.XmlSerializerUtil
 
+const val DEFAULT_COLOR: Int = 0xFFDDC7
+
 @State(
     name = "com.github.ljacqu.ijpackagehighlighter.HighlightSettings",
     category = SettingsCategory.PLUGINS,
@@ -24,8 +26,10 @@ class HighlightSettings : PersistentStateComponent<HighlightSettings.State> {
     }
 
     class HighlightRule {
+
+        var name: String = ""
         var prefix: String = ""
-        var rgb: Int = 0xFFFF00 // default yellow background
+        var rgb: Int = DEFAULT_COLOR
 
         // needed for XML deserialization
         internal constructor()
