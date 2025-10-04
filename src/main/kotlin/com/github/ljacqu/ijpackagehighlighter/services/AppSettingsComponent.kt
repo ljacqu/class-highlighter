@@ -17,21 +17,22 @@ import javax.swing.JTextField
 import javax.swing.table.TableCellEditor
 import javax.swing.table.TableCellRenderer
 
+/**
+ * UI component for the highlight settings.
+ */
 class AppSettingsComponent {
 
     val rulesModel: ListTableModel<Rule>
     val panel: JPanel
 
-    constructor(state: HighlightSettings.State) {
-        rulesModel = createRulesModel(state.groups)
+    constructor() {
+        rulesModel = createRulesModel()
         panel = createHighlightRulesPanel(rulesModel)
     }
 
-    private fun createRulesModel(initialRules: List<HighlightSettings.HighlightRule>): ListTableModel<Rule> {
+    private fun createRulesModel(): ListTableModel<Rule> {
         val cols = arrayOf(PrefixColumn(), ColorColumn())
-        val rulesModel = ListTableModel<Rule>(*cols)
-        initialRules.forEach { rulesModel.addRow(Rule(it.prefix, it.rgb)) }
-        return rulesModel
+        return ListTableModel<Rule>(*cols)
     }
 
     /**

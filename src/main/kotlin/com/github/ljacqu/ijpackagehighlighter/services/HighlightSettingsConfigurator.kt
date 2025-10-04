@@ -8,12 +8,14 @@ class HighlightSettingsConfigurator(private val project: Project) : Configurable
 
     private var settingsComponent: AppSettingsComponent? = null
 
-    override fun getDisplayName(): String = "Package Highlighting"
+    override fun getDisplayName() = "Package Highlighting"
 
+    // As specified in https://plugins.jetbrains.com/docs/intellij/settings-guide.html#the-configurable-interface,
+    // createComponent() does not need to add any data, as reset() is called right after.
     override fun createComponent(): JComponent {
         if (settingsComponent == null) {
             val state = project.getService(HighlightSettings::class.java).state
-            val component = AppSettingsComponent(state)
+            val component = AppSettingsComponent()
             this.settingsComponent = component
         }
         return settingsComponent!!.panel
