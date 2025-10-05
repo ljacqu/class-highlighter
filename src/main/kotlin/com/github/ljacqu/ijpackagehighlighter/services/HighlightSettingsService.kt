@@ -3,7 +3,6 @@ package com.github.ljacqu.ijpackagehighlighter.services
 import com.github.ljacqu.ijpackagehighlighter.services.HighlightSettings.Section
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiCatchSection
-import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiField
 import com.intellij.psi.PsiJavaCodeReferenceElement
 import com.intellij.psi.PsiMethod
@@ -15,7 +14,7 @@ import com.intellij.psi.util.PsiTreeUtil
 class HighlightSettingsService(project: Project) {
 
     private val state: HighlightSettings.State = project.getService(HighlightSettings::class.java).state
-    private var rules: Map<String, HighlightSettings.HighlightRule> = initRules()
+    private var rules: List<RuleApplication> = initRules()
 
     fun shouldHighlight(section: Section): Boolean {
         return state.sectionsToHighlight.contains(section)
@@ -25,10 +24,10 @@ class HighlightSettingsService(project: Project) {
         rules = initRules()
     }
 
-    private fun initRules(): Map<String, HighlightSettings.HighlightRule> {
-        val rules = HashMap<String, HighlightSettings.HighlightRule>()
-        state.rules.forEach { rules[it.prefix] = it }
-        return rules
+    private fun initRules(): List<RuleApplication> {
+        return state.rules
+            .filter { it.prefix.isNotEmpty() }
+            .map { RuleApplication(it) }
     }
 
     fun highlightReferenceElement(element: PsiJavaCodeReferenceElement): Boolean {
@@ -62,14 +61,8 @@ class HighlightSettingsService(project: Project) {
         return Section.OTHER
     }
 
-    fun findRuleIfApplicable(element: PsiElement, qualifiedName: String?): HighlightSettings.HighlightRule? {
+    fun findRuleIfApplicable(qualifiedName: String?): RuleApplication? {
         if (qualifiedName == null) return null
-
-        for (entry in rules) {
-            if (qualifiedName.startsWith(entry.key)) {
-                return entry.value
-            }
-        }
-        return null
+        return rules.firstOrNull { r -> r.matches(qualifiedName) }
     }
 }

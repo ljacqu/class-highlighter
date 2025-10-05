@@ -6,7 +6,6 @@ import com.intellij.lang.annotation.AnnotationBuilder
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
-import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
@@ -15,8 +14,6 @@ import com.intellij.psi.PsiImportStatement
 import com.intellij.psi.PsiJavaCodeReferenceElement
 import com.intellij.psi.PsiPackageStatement
 import com.intellij.psi.util.PsiTreeUtil
-import java.awt.Color
-import java.awt.Font
 
 /**
  * Annotates Java type references that appear in method signatures and catch clauses.
@@ -59,15 +56,14 @@ class PackageHighlighter : Annotator {
     }
 
     private fun annotateIfQualifiedNameMatches(element: PsiElement, holder: AnnotationHolder, qualifiedName: String?) {
-        val rule = settingsService!!.findRuleIfApplicable(element, qualifiedName)
+        val rule = settingsService!!.findRuleIfApplicable(qualifiedName)
         if (rule != null) {
-            val bg = Color(rule.rgb)
-            val attrs = TextAttributes(null, bg, null, null, Font.PLAIN)
+            val attrs = rule.createTextAttributes()
             val sectionDescription = when (element) {
                 is PsiJavaCodeReferenceElement -> settingsService!!.determineReferenceElementType(element).name
                 else -> "Highlighted class"
             }
-            val annotationBuilder = newAnnotation(holder, if (debugShowSection) sectionDescription else rule.name)
+            val annotationBuilder = newAnnotation(holder, if (debugShowSection) sectionDescription else rule.getName())
                 .enforcedTextAttributes(attrs)
             if (element is PsiJavaCodeReferenceElement) {
                 val referenceNameElem = getReferenceNameForRange(element)
