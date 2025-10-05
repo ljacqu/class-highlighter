@@ -1,8 +1,8 @@
-package com.github.ljacqu.ijpackagehighlighter.settings
+package com.github.ljacqu.classhighlighter.settings
 
-import com.github.ljacqu.ijpackagehighlighter.services.DEFAULT_COLOR
-import com.github.ljacqu.ijpackagehighlighter.services.HighlightSettings
-import com.github.ljacqu.ijpackagehighlighter.utils.ColorUtil
+import com.github.ljacqu.classhighlighter.services.DEFAULT_COLOR
+import com.github.ljacqu.classhighlighter.services.HighlightSettings
+import com.github.ljacqu.classhighlighter.utils.ColorUtil
 import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.table.TableView

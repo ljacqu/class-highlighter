@@ -1,4 +1,4 @@
-package com.github.ljacqu.ijpackagehighlighter.utils
+package com.github.ljacqu.classhighlighter.utils
 
 /**
  * Color utilities.

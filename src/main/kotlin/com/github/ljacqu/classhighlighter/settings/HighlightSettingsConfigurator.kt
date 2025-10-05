@@ -1,7 +1,7 @@
-package com.github.ljacqu.ijpackagehighlighter.settings
+package com.github.ljacqu.classhighlighter.settings
 
-import com.github.ljacqu.ijpackagehighlighter.services.HighlightSettings
-import com.github.ljacqu.ijpackagehighlighter.services.HighlightSettingsService
+import com.github.ljacqu.classhighlighter.services.HighlightSettings
+import com.github.ljacqu.classhighlighter.services.HighlightSettingsService
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
 import javax.swing.JComponent
@@ -13,7 +13,7 @@ class HighlightSettingsConfigurator(private val project: Project) : Configurable
 
     private var settingsComponent: AppSettingsComponent? = null
 
-    override fun getDisplayName() = "Package Highlighting"
+    override fun getDisplayName() = "Class Highlighting"
 
     // As specified in https://plugins.jetbrains.com/docs/intellij/settings-guide.html#the-configurable-interface,
     // createComponent() does not need to add any data, as reset() is called right after.

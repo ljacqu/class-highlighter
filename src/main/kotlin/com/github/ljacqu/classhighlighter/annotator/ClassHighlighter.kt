@@ -1,7 +1,7 @@
-package com.github.ljacqu.ijpackagehighlighter.annotator
+package com.github.ljacqu.classhighlighter.annotator
 
-import com.github.ljacqu.ijpackagehighlighter.services.HighlightSettings.Section
-import com.github.ljacqu.ijpackagehighlighter.services.HighlightSettingsService
+import com.github.ljacqu.classhighlighter.services.HighlightSettings.Section
+import com.github.ljacqu.classhighlighter.services.HighlightSettingsService
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.openapi.project.Project

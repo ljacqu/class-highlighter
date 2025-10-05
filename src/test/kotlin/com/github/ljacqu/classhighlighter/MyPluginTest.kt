@@ -1,4 +1,4 @@
-package com.github.ljacqu.ijpackagehighlighter
+package com.github.ljacqu.classhighlighter
 
 import com.intellij.testFramework.TestDataPath
 import com.intellij.testFramework.fixtures.BasePlatformTestCase

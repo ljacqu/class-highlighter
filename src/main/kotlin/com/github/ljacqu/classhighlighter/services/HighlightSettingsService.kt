@@ -1,6 +1,6 @@
-package com.github.ljacqu.ijpackagehighlighter.services
+package com.github.ljacqu.classhighlighter.services
 
-import com.github.ljacqu.ijpackagehighlighter.services.HighlightSettings.Section
+import com.github.ljacqu.classhighlighter.services.HighlightSettings.Section
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiCatchSection
 import com.intellij.psi.PsiField

@@ -1,6 +1,6 @@
-package com.github.ljacqu.ijpackagehighlighter.services
+package com.github.ljacqu.classhighlighter.services
 
-import com.github.ljacqu.ijpackagehighlighter.utils.ColorUtil
+import com.github.ljacqu.classhighlighter.utils.ColorUtil
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

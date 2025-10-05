@@ -1,4 +1,4 @@
-package com.github.ljacqu.ijpackagehighlighter.services
+package com.github.ljacqu.classhighlighter.services
 
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

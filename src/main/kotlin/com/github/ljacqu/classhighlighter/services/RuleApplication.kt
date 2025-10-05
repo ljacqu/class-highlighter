@@ -1,6 +1,6 @@
-package com.github.ljacqu.ijpackagehighlighter.services
+package com.github.ljacqu.classhighlighter.services
 
-import com.github.ljacqu.ijpackagehighlighter.utils.ColorUtil
+import com.github.ljacqu.classhighlighter.utils.ColorUtil
 import com.intellij.lang.annotation.AnnotationBuilder
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.HighlightSeverity

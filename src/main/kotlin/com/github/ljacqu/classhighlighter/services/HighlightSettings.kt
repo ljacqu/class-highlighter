@@ -1,4 +1,4 @@
-package com.github.ljacqu.ijpackagehighlighter.services
+package com.github.ljacqu.classhighlighter.services
 
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.SettingsCategory
@@ -13,9 +13,9 @@ const val DEFAULT_COLOR: Int = 0xFFDDC7
  * Persisted settings.
  */
 @State(
-    name = "com.github.ljacqu.ijpackagehighlighter.HighlightSettings",
+    name = "com.github.ljacqu.classhighlighter.HighlightSettings",
     category = SettingsCategory.PLUGINS,
-    storages = [Storage("package-highlighter.xml")]
+    storages = [Storage("class-highlighter.xml")]
 )
 class HighlightSettings : PersistentStateComponent<HighlightSettings.State> {
 
