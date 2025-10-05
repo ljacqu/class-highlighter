@@ -7,11 +7,13 @@ import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.project.Project
+import com.intellij.psi.JavaTokenType
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiIdentifier
 import com.intellij.psi.PsiImportStatement
 import com.intellij.psi.PsiJavaCodeReferenceElement
+import com.intellij.psi.PsiJavaToken
 import com.intellij.psi.PsiPackageStatement
 import com.intellij.psi.util.PsiTreeUtil
 
@@ -29,11 +31,13 @@ class PackageHighlighter : Annotator {
         when (element) {
             is PsiPackageStatement -> {
                 if (service.shouldHighlight(Section.PACKAGE))
-                    annotateIfQualifiedNameMatches(element, holder, element.packageName)
+                    // Quick fix to highlight packages, e.g. if a highlight rule specifies "java.util.*"
+                    // we still want a match for "package java.util;"
+                    annotateIfQualifiedNameMatches(element, holder, element.packageName + ".$")
             }
             is PsiImportStatement -> {
                 if (service.shouldHighlight(Section.IMPORT))
-                    annotateIfQualifiedNameMatches(element, holder, element.qualifiedName)
+                    annotateIfQualifiedNameMatches(element, holder, getQualifiedNameOfImport(element))
             }
             is PsiJavaCodeReferenceElement -> {
                 if (isRelevantReferenceElement(element)) {
@@ -53,6 +57,20 @@ class PackageHighlighter : Annotator {
         val service = project.getService(HighlightSettingsService::class.java)
         settingsService = service
         return service
+    }
+
+    private fun getQualifiedNameOfImport(element: PsiImportStatement): String? {
+        if (element.qualifiedName == null) {
+            return null
+        }
+
+        val hasAsterisk = PsiTreeUtil.getChildrenOfType(element, PsiJavaToken::class.java)
+            ?.any { token -> token.tokenType == JavaTokenType.ASTERISK }
+        if (hasAsterisk != null && hasAsterisk) {
+            // Return java.util.* if the line is "import java.util.*;"
+            return element.qualifiedName + ".*"
+        }
+        return element.qualifiedName
     }
 
     private fun annotateIfQualifiedNameMatches(element: PsiElement, holder: AnnotationHolder, qualifiedName: String?) {
@@ -87,7 +105,6 @@ class PackageHighlighter : Annotator {
      * a declaration like {@code ArrayList<T>} to only highlight the {@code ArrayList} part.
      */
     private fun getReferenceNameForRange(element: PsiJavaCodeReferenceElement): PsiElement? {
-        // todo lj: Can we detect a fqn and highlight it as one too?
         return element.referenceNameElement
     }
 
@@ -112,6 +129,12 @@ class PackageHighlighter : Annotator {
         // PsiImportStatement & PsiPackageStatement are handled as a whole, so ignore the children elements
         if (PsiTreeUtil.getParentOfType(elem, PsiImportStatement::class.java, false) != null
             || PsiTreeUtil.getParentOfType(elem, PsiPackageStatement::class.java, false) != null) {
+            return false
+        }
+        if (elem.parent is PsiJavaCodeReferenceElement) {
+            // Fully qualified names like a variable declaration of "java.lang.Comparable" or references in JavaDoc like
+            // "@see java.util.function.Predicate" seem to produce a PsiJavaCodeReferenceElement that has a parent of
+            // the same type. We just need to handle the parent so that only the class name is highlighted.
             return false
         }
         return settingsService!!.highlightReferenceElement(elem)
