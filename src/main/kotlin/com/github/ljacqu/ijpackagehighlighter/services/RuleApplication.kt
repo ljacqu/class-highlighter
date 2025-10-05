@@ -1,5 +1,8 @@
 package com.github.ljacqu.ijpackagehighlighter.services
 
+import com.intellij.lang.annotation.AnnotationBuilder
+import com.intellij.lang.annotation.AnnotationHolder
+import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.editor.markup.TextAttributes
 import java.awt.Color
 import java.awt.Font
@@ -21,12 +24,22 @@ class RuleApplication(private val rule: HighlightSettings.HighlightRule) {
 
     fun matches(qualifiedName: String) = filter(qualifiedName)
 
+    fun getName(): String = rule.name
+
     fun createTextAttributes(): TextAttributes {
         val bg = Color(rule.rgb)
         return TextAttributes(null, bg, null, null, Font.PLAIN)
     }
 
-    fun getName(): String = rule.name
+    fun newAnnotationBuilder(holder: AnnotationHolder, name: String?): AnnotationBuilder {
+        val holder = if (name.isNullOrEmpty()) {
+            holder.newSilentAnnotation(HighlightSeverity.INFORMATION)
+        } else {
+            holder.newAnnotation(HighlightSeverity.INFORMATION, name)
+        }
+        holder.enforcedTextAttributes(createTextAttributes())
+        return holder
+    }
 
     private fun createRegexFilter(wildcardPattern: String): (String) -> Boolean {
         val parts = wildcardPattern.split("*").map { Regex.escape(it) }
