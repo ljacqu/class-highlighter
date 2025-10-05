@@ -8,6 +8,9 @@ import com.intellij.util.xmlb.XmlSerializerUtil
 
 const val DEFAULT_COLOR: Int = 0xFFDDC7
 
+/**
+ * Persisted settings.
+ */
 @State(
     name = "com.github.ljacqu.ijpackagehighlighter.HighlightSettings",
     category = SettingsCategory.PLUGINS,
@@ -70,4 +73,3 @@ class HighlightSettings : PersistentStateComponent<HighlightSettings.State> {
         }
     }
 }
-

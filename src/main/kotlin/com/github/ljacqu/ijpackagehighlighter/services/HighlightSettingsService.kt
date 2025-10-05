@@ -11,20 +11,26 @@ import com.intellij.psi.PsiReferenceList
 import com.intellij.psi.javadoc.PsiDocComment
 import com.intellij.psi.util.PsiTreeUtil
 
+/**
+ * Service offering functionality relating to the plugin's settings.
+ */
 class HighlightSettingsService(project: Project) {
 
     private val state: HighlightSettings.State = project.getService(HighlightSettings::class.java).state
-    private var rules: List<RuleApplication> = initRules()
+    private var rules: List<RuleApplication> = createRuleApplications()
 
     fun shouldHighlight(section: Section): Boolean {
         return state.sectionsToHighlight.contains(section)
     }
 
+    /**
+     * Reloads the settings from [HighlightSettings].
+     */
     fun reload() {
-        rules = initRules()
+        rules = createRuleApplications()
     }
 
-    private fun initRules(): List<RuleApplication> {
+    private fun createRuleApplications(): List<RuleApplication> {
         return state.rules
             .filter { it.prefix.isNotEmpty() }
             .map { RuleApplication(it) }

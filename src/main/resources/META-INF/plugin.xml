@@ -9,7 +9,7 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <annotator language="JAVA"
-                   implementationClass="com.github.ljacqu.ijpackagehighlighter.startup.PackageHighlighter"/>
+                   implementationClass="com.github.ljacqu.ijpackagehighlighter.annotator.ClassHighlighter"/>
         <projectConfigurable id="package.highlighter"
                              displayName="Class Highlight Rules"
                              parentId="editor"

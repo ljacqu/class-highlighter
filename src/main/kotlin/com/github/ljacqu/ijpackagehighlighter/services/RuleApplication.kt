@@ -4,6 +4,9 @@ import com.intellij.openapi.editor.markup.TextAttributes
 import java.awt.Color
 import java.awt.Font
 
+/**
+ * Contains a highlight rule and allows to process it.
+ */
 class RuleApplication(private val rule: HighlightSettings.HighlightRule) {
 
     private val filter: Function1<String, Boolean>

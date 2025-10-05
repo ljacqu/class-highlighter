@@ -1,6 +1,6 @@
-package com.github.ljacqu.ijpackagehighlighter.startup
+package com.github.ljacqu.ijpackagehighlighter.annotator
 
-import com.github.ljacqu.ijpackagehighlighter.services.HighlightSettings.Section
+import com.github.ljacqu.ijpackagehighlighter.services.HighlightSettings
 import com.github.ljacqu.ijpackagehighlighter.services.HighlightSettingsService
 import com.intellij.lang.annotation.AnnotationBuilder
 import com.intellij.lang.annotation.AnnotationHolder
@@ -19,9 +19,9 @@ import com.intellij.psi.PsiPackageStatement
 import com.intellij.psi.util.PsiTreeUtil
 
 /**
- * Annotates Java type references that appear in method signatures and catch clauses.
+ * Annotates Java classes based on the plugin's highlight rules (based on package name).
  */
-class PackageHighlighter : Annotator {
+class ClassHighlighter : Annotator {
 
     private val debugShowSection = false // TODO: Remove this
     private var settingsService: HighlightSettingsService? = null
@@ -31,13 +31,13 @@ class PackageHighlighter : Annotator {
 
         when (element) {
             is PsiPackageStatement -> {
-                if (service.shouldHighlight(Section.PACKAGE))
+                if (service.shouldHighlight(HighlightSettings.Section.PACKAGE))
                     // Quick fix to highlight packages, e.g. if a highlight rule specifies "java.util.*"
                     // we still want a match for "package java.util;"
                     annotateIfQualifiedNameMatches(element, holder, element.packageName + ".$")
             }
             is PsiImportStatement -> {
-                if (service.shouldHighlight(Section.IMPORT))
+                if (service.shouldHighlight(HighlightSettings.Section.IMPORT))
                     annotateIfQualifiedNameMatches(element, holder, getQualifiedNameOfImport(element))
             }
             is PsiJavaCodeReferenceElement -> {
@@ -49,7 +49,7 @@ class PackageHighlighter : Annotator {
                 val parent = element.parent
                 if (parent is PsiClass) { // public class _Name_ ...
                     annotateIfQualifiedNameMatches(element, holder, parent.qualifiedName)
-                } else if (service.shouldHighlight(Section.CONSTRUCTOR)
+                } else if (service.shouldHighlight(HighlightSettings.Section.CONSTRUCTOR)
                            && (parent as? PsiMethod)?.isConstructor == true) {
                     val qualifiedName = (parent.parent as? PsiClass)?.qualifiedName
                     annotateIfQualifiedNameMatches(element, holder, qualifiedName)

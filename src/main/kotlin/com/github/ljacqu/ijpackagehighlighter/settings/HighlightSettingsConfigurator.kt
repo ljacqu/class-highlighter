@@ -6,6 +6,9 @@ import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
 import javax.swing.JComponent
 
+/**
+ * Settings configurator (for the UI component). The actual UI components are managed by [AppSettingsComponent].
+ */
 class HighlightSettingsConfigurator(private val project: Project) : Configurable {
 
     private var settingsComponent: AppSettingsComponent? = null
