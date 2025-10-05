@@ -1,6 +1,6 @@
 package com.github.ljacqu.ijpackagehighlighter.annotator
 
-import com.github.ljacqu.ijpackagehighlighter.services.HighlightSettings
+import com.github.ljacqu.ijpackagehighlighter.services.HighlightSettings.Section
 import com.github.ljacqu.ijpackagehighlighter.services.HighlightSettingsService
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
@@ -29,7 +29,7 @@ class ClassHighlighter : Annotator {
 
         when (element) {
             is PsiPackageStatement -> {
-                if (service.shouldHighlight(HighlightSettings.Section.PACKAGE)) {
+                if (service.shouldHighlight(Section.PACKAGE)) {
                     // Quick fix to highlight packages, e.g. if a highlight rule specifies "java.util.*"
                     // we still want a match for "package java.util;"
                     annotateIfQualifiedNameMatches(element, holder, element.packageName + ".$")
@@ -37,7 +37,7 @@ class ClassHighlighter : Annotator {
             }
 
             is PsiImportStatement -> {
-                if (service.shouldHighlight(HighlightSettings.Section.IMPORT)) {
+                if (service.shouldHighlight(Section.IMPORT)) {
                     annotateIfQualifiedNameMatches(element, holder, getQualifiedNameOfImport(element))
                 }
             }
@@ -51,8 +51,10 @@ class ClassHighlighter : Annotator {
             is PsiIdentifier -> {
                 val parent = element.parent
                 if (parent is PsiClass) { // public class _Name_ ...
-                    annotateIfQualifiedNameMatches(element, holder, parent.qualifiedName)
-                } else if (service.shouldHighlight(HighlightSettings.Section.CONSTRUCTOR)) {
+                    if (service.shouldHighlight(Section.OTHER)) {
+                        annotateIfQualifiedNameMatches(element, holder, parent.qualifiedName)
+                    }
+                } else if (service.shouldHighlight(Section.CONSTRUCTOR)) {
                     annotateIfQualifiedNameMatches(element, holder, getQualifiedNameOfConstructorIfApplicable(parent))
                 }
             }
