@@ -12,7 +12,7 @@ class RuleApplicationTest {
     @Test
     fun shouldMatchByWildcard() {
         // given
-        val rule = HighlightSettings.HighlightRule("", "*.util.*", 0xFFEEDD)
+        val rule = HighlightSettings.HighlightRule("", "*.util.*", "FFEEDD")
         val ruleApplication = RuleApplication(rule)
 
         // when / then
@@ -23,7 +23,7 @@ class RuleApplicationTest {
     @Test
     fun shouldMatchByStart() {
         // given
-        val rule = HighlightSettings.HighlightRule("", "java.lang.", 0xEEE9FF)
+        val rule = HighlightSettings.HighlightRule("", "java.lang.", "EEE9FF")
         val ruleApplication = RuleApplication(rule)
 
         // when / then

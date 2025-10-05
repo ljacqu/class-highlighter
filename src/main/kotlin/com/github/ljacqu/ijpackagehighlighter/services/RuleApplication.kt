@@ -1,5 +1,6 @@
 package com.github.ljacqu.ijpackagehighlighter.services
 
+import com.github.ljacqu.ijpackagehighlighter.utils.ColorUtil
 import com.intellij.lang.annotation.AnnotationBuilder
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.HighlightSeverity
@@ -27,7 +28,7 @@ class RuleApplication(private val rule: HighlightSettings.HighlightRule) {
     fun getName(): String = rule.name
 
     fun createTextAttributes(): TextAttributes {
-        val bg = Color(rule.rgb)
+        val bg = Color(ColorUtil.hexStringToInt(rule.rgb))
         return TextAttributes(null, bg, null, null, Font.PLAIN)
     }
 

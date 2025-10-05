@@ -2,6 +2,7 @@ package com.github.ljacqu.ijpackagehighlighter.settings
 
 import com.github.ljacqu.ijpackagehighlighter.services.DEFAULT_COLOR
 import com.github.ljacqu.ijpackagehighlighter.services.HighlightSettings
+import com.github.ljacqu.ijpackagehighlighter.utils.ColorUtil
 import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.table.TableView
@@ -141,10 +142,11 @@ class AppSettingsComponent {
     /** Highlight rule model. */
     data class Rule(var name: String = "", var prefix: String = "", var rgb: Int = DEFAULT_COLOR) {
 
-        fun toHighlightRule(): HighlightSettings.HighlightRule = HighlightSettings.HighlightRule(name, prefix, rgb)
+        fun toHighlightRule(): HighlightSettings.HighlightRule =
+            HighlightSettings.HighlightRule(name, prefix, ColorUtil.intToHexString(rgb))
 
         constructor(highlightRule: HighlightSettings.HighlightRule)
-                : this(highlightRule.name, highlightRule.prefix, highlightRule.rgb)
+                : this(highlightRule.name, highlightRule.prefix, ColorUtil.hexStringToInt(highlightRule.rgb))
     }
 
     /** Name column definition. */

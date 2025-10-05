@@ -6,6 +6,7 @@ import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.util.xmlb.XmlSerializerUtil
 
+const val DEFAULT_COLOR_HEX: String = "FFDDC7"
 const val DEFAULT_COLOR: Int = 0xFFDDC7
 
 /**
@@ -32,13 +33,13 @@ class HighlightSettings : PersistentStateComponent<HighlightSettings.State> {
 
         var name: String = ""
         var prefix: String = ""
-        var rgb: Int = DEFAULT_COLOR
+        var rgb: String = DEFAULT_COLOR_HEX
 
         // needed for XML deserialization
         @Suppress("unused")
         internal constructor()
 
-        internal constructor(name: String, prefix: String, rgb: Int) {
+        internal constructor(name: String, prefix: String, rgb: String) {
             this.name = name
             this.prefix = prefix
             this.rgb = rgb
@@ -64,9 +65,9 @@ class HighlightSettings : PersistentStateComponent<HighlightSettings.State> {
 
         init {
             if (rules.isEmpty()) {
-                rules.add(HighlightRule("Java util", "java.util.", 0xFFF2CC)) // soft beige
-                rules.add(HighlightRule("JDK internal", "jdk.internal.", 0xE2F0D9)) // soft green
-                rules.add(HighlightRule("Java lang", "java.lang.", 0xDDEBF7)) // pale blue
+                rules.add(HighlightRule("Java util", "java.util.", "FFF2CC")) // soft beige
+                rules.add(HighlightRule("JDK internal", "jdk.internal.", "E2F0D9")) // soft green
+                rules.add(HighlightRule("Java lang", "java.lang.", "DDEBF7")) // pale blue
 
                 sectionsToHighlight.addAll(Section.entries.toList())
             }
