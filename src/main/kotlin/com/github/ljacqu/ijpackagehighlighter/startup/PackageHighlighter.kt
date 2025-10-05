@@ -14,6 +14,7 @@ import com.intellij.psi.PsiIdentifier
 import com.intellij.psi.PsiImportStatement
 import com.intellij.psi.PsiJavaCodeReferenceElement
 import com.intellij.psi.PsiJavaToken
+import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiPackageStatement
 import com.intellij.psi.util.PsiTreeUtil
 
@@ -48,6 +49,10 @@ class PackageHighlighter : Annotator {
                 val parent = element.parent
                 if (parent is PsiClass) { // public class _Name_ ...
                     annotateIfQualifiedNameMatches(element, holder, parent.qualifiedName)
+                } else if (service.shouldHighlight(Section.CONSTRUCTOR)
+                           && (parent as? PsiMethod)?.isConstructor == true) {
+                    val qualifiedName = (parent.parent as? PsiClass)?.qualifiedName
+                    annotateIfQualifiedNameMatches(element, holder, qualifiedName)
                 }
             }
         }
@@ -66,7 +71,7 @@ class PackageHighlighter : Annotator {
 
         val hasAsterisk = PsiTreeUtil.getChildrenOfType(element, PsiJavaToken::class.java)
             ?.any { token -> token.tokenType == JavaTokenType.ASTERISK }
-        if (hasAsterisk != null && hasAsterisk) {
+        if (hasAsterisk == true) {
             // Return java.util.* if the line is "import java.util.*;"
             return element.qualifiedName + ".*"
         }

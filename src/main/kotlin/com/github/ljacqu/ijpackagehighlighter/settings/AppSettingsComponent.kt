@@ -96,10 +96,11 @@ class AppSettingsComponent {
             SectionCheckBox(HighlightSettings.Section.PACKAGE, "Highlight package declarations"),
             SectionCheckBox(HighlightSettings.Section.IMPORT, "Highlight import statements"),
             SectionCheckBox(HighlightSettings.Section.JAVADOC, "Highlight classes in JavaDoc"),
+            SectionCheckBox(HighlightSettings.Section.CONSTRUCTOR, "Highlight constructor declarations"),
             SectionCheckBox(HighlightSettings.Section.FIELD_TYPE, "Highlight field types"),
             SectionCheckBox(HighlightSettings.Section.METHOD_SIGNATURE, "Highlight types in method signatures"),
             SectionCheckBox(HighlightSettings.Section.CATCH, "Highlight types in catch clauses"),
-            SectionCheckBox(HighlightSettings.Section.OTHER, "Highlight in other places"),
+            SectionCheckBox(HighlightSettings.Section.OTHER, "Highlight other places"),
         )
     }
 
