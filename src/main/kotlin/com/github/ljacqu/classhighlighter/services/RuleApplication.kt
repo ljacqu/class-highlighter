@@ -27,11 +27,6 @@ class RuleApplication(private val rule: HighlightSettings.HighlightRule) {
 
     fun getName(): String = rule.name
 
-    fun createTextAttributes(): TextAttributes {
-        val bg = Color(ColorUtil.hexStringToInt(rule.rgb))
-        return TextAttributes(null, bg, null, null, Font.PLAIN)
-    }
-
     fun newAnnotationBuilder(holder: AnnotationHolder, name: String?): AnnotationBuilder {
         val holder = if (name.isNullOrEmpty()) {
             holder.newSilentAnnotation(HighlightSeverity.INFORMATION)
@@ -40,6 +35,11 @@ class RuleApplication(private val rule: HighlightSettings.HighlightRule) {
         }
         holder.enforcedTextAttributes(createTextAttributes())
         return holder
+    }
+
+    private fun createTextAttributes(): TextAttributes {
+        val bg = Color(ColorUtil.hexStringToInt(rule.rgb))
+        return TextAttributes(null, bg, null, null, Font.PLAIN)
     }
 
     private fun createRegexFilter(wildcardPattern: String): (String) -> Boolean {

@@ -68,8 +68,8 @@ class AppSettingsComponent {
         table.columnModel.getColumn(2).cellEditor = ColorCellEditor()
 
         // ensure prefix column uses text field editor (default works but explicit is fine)
-        table.columnModel.getColumn(1).cellEditor = PrefixCellEditor()
-        table.columnModel.getColumn(0).cellEditor = PrefixCellEditor()
+        table.columnModel.getColumn(1).cellEditor = TextCellEditor()
+        table.columnModel.getColumn(0).cellEditor = TextCellEditor()
 
         // toolbar for add/remove/move
         val decorator = ToolbarDecorator.createDecorator(table)
@@ -182,7 +182,7 @@ class AppSettingsComponent {
         }
     }
 
-    class PrefixCellEditor : AbstractCellEditor(), TableCellEditor {
+    class TextCellEditor : AbstractCellEditor(), TableCellEditor {
 
         private val tf = JTextField()
 
