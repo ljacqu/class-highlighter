@@ -2,7 +2,10 @@ package com.github.ljacqu.classhighlighter.settings
 
 import com.github.ljacqu.classhighlighter.services.DEFAULT_COLOR
 import com.github.ljacqu.classhighlighter.services.HighlightSettings
+import com.github.ljacqu.classhighlighter.services.HighlightSettings.HighlightRule.Companion.DEFAULT_STYLE
+import com.github.ljacqu.classhighlighter.services.HighlightSettings.Style
 import com.github.ljacqu.classhighlighter.utils.ColorUtil
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.table.TableView
@@ -42,7 +45,7 @@ class AppSettingsComponent {
     }
 
     private fun createRulesModel(): ListTableModel<Rule> {
-        val cols = arrayOf(NameColumn(), PrefixColumn(), ColorColumn())
+        val cols = arrayOf(NameColumn(), PrefixColumn(), ColorColumn(), StyleColumn())
         return ListTableModel<Rule>(*cols)
     }
 
@@ -61,21 +64,20 @@ class AppSettingsComponent {
         table.tableHeader.reorderingAllowed = false
         table.rowHeight = 22
 
-        // set renderer/editor for color column (it's index 1)
+        table.columnModel.getColumn(0).cellEditor = TextCellEditor()
+        table.columnModel.getColumn(1).cellEditor = TextCellEditor()
+        // set renderer/editor for color column
         val colorRenderer = ColorCellRenderer()
         table.setDefaultRenderer(Int::class.java, colorRenderer) // fallback
         table.columnModel.getColumn(2).cellRenderer = colorRenderer
         table.columnModel.getColumn(2).cellEditor = ColorCellEditor()
-
-        // ensure prefix column uses text field editor (default works but explicit is fine)
-        table.columnModel.getColumn(1).cellEditor = TextCellEditor()
-        table.columnModel.getColumn(0).cellEditor = TextCellEditor()
+        table.columnModel.getColumn(3).cellEditor = StyleCellEditor()
 
         // toolbar for add/remove/move
         val decorator = ToolbarDecorator.createDecorator(table)
         decorator.setAddAction {
             // add default item and start editing first cell
-            rulesModel.addRow(Rule("", "", DEFAULT_COLOR))
+            rulesModel.addRow(Rule("", "", DEFAULT_COLOR, DEFAULT_STYLE.text))
             val newRow = rulesModel.rowCount - 1
             table.selectionModel.setSelectionInterval(newRow, newRow)
             table.editCellAt(newRow, 0)
@@ -140,13 +142,17 @@ class AppSettingsComponent {
     }
 
     /** Highlight rule model. */
-    data class Rule(var name: String = "", var prefix: String = "", var rgb: Int = DEFAULT_COLOR) {
+    data class Rule(var name: String = "", var prefix: String = "", var rgb: Int = DEFAULT_COLOR, var style: String) {
 
         fun toHighlightRule(): HighlightSettings.HighlightRule =
-            HighlightSettings.HighlightRule(name, prefix, ColorUtil.intToHexString(rgb))
+            HighlightSettings.HighlightRule(name, prefix, ColorUtil.intToHexString(rgb), Style.fromText(style))
 
-        constructor(highlightRule: HighlightSettings.HighlightRule)
-                : this(highlightRule.name, highlightRule.prefix, ColorUtil.hexStringToInt(highlightRule.rgb))
+        constructor(highlightRule: HighlightSettings.HighlightRule) : this(
+            highlightRule.name,
+            highlightRule.prefix,
+            ColorUtil.hexStringToInt(highlightRule.rgb),
+            highlightRule.style.text
+        )
     }
 
     /** Name column definition. */
@@ -179,6 +185,17 @@ class AppSettingsComponent {
 
         override fun setValue(item: Rule, value: Int?) {
             item.rgb = value ?: DEFAULT_COLOR
+        }
+    }
+
+    /** Style column definition. */
+    class StyleColumn : ColumnInfo<Rule, String>("Style") {
+
+        override fun valueOf(item: Rule) = item.style
+        override fun isCellEditable(item: Rule) = true
+
+        override fun setValue(item: Rule, value: String?) {
+            item.style = value ?: DEFAULT_STYLE.text
         }
     }
 
@@ -256,6 +273,30 @@ class AppSettingsComponent {
                 else -> DEFAULT_COLOR
             }
             return button
+        }
+    }
+
+    class StyleCellEditor : AbstractCellEditor(), TableCellEditor {
+
+        private val comboBox: ComboBox<String> = ComboBox(Style.entries.map { e -> e.text }.toTypedArray())
+        private var currentValue: String = DEFAULT_STYLE.text
+
+        init {
+            comboBox.addActionListener {
+                currentValue = comboBox.selectedItem as? String ?: DEFAULT_STYLE.text
+            }
+        }
+
+        override fun getCellEditorValue() = currentValue
+
+        override fun getTableCellEditorComponent(table: JTable?, value: Any?, isSelected: Boolean,
+                                                 row: Int, column: Int): Component {
+            currentValue = when (value) {
+                is String -> value
+                else -> DEFAULT_STYLE.text
+            }
+            comboBox.selectedItem = currentValue
+            return comboBox
         }
     }
 

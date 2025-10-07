@@ -34,15 +34,21 @@ class HighlightSettings : PersistentStateComponent<HighlightSettings.State> {
         var name: String = ""
         var prefix: String = ""
         var rgb: String = DEFAULT_COLOR_HEX
+        var style: Style = Style.BACKGROUND
 
         // needed for XML deserialization
         @Suppress("unused")
         internal constructor()
 
-        internal constructor(name: String, prefix: String, rgb: String) {
+        internal constructor(name: String, prefix: String, rgb: String, style: Style) {
             this.name = name
             this.prefix = prefix
             this.rgb = rgb
+            this.style = style
+        }
+
+        companion object {
+            val DEFAULT_STYLE: Style = Style.BACKGROUND
         }
     }
 
@@ -57,6 +63,24 @@ class HighlightSettings : PersistentStateComponent<HighlightSettings.State> {
         OTHER
     }
 
+    enum class Style(val text: String) {
+        BACKGROUND("Background color"),
+        TEXT_COLOR("Text color"),
+        LINE_UNDERSCORE("Underscored"),
+        WAVE_UNDERSCORE("Underwaved"),
+        DOTTED_UNDERLINE("Dotted underline"),
+        STRIKEOUT("Strikeout"),
+        ROUNDED_BOX("Bordered"),
+        ;
+
+        companion object {
+
+            fun fromText(text: String): Style =
+                entries.firstOrNull { e -> e.text == text } ?: HighlightRule.DEFAULT_STYLE
+
+        }
+    }
+
     class State {
 
         // Note: Values must be kept as var here so they're picked up by the serializer properly
@@ -65,9 +89,10 @@ class HighlightSettings : PersistentStateComponent<HighlightSettings.State> {
 
         init {
             if (rules.isEmpty()) {
-                rules.add(HighlightRule("Java util", "java.util.", "FFF2CC")) // soft beige
-                rules.add(HighlightRule("JDK internal", "jdk.internal.", "E2F0D9")) // soft green
-                rules.add(HighlightRule("Java lang", "java.lang.", "DDEBF7")) // pale blue
+                val style = HighlightRule.DEFAULT_STYLE
+                rules.add(HighlightRule("Java util", "java.util.", "FFF2CC", style)) // soft beige
+                rules.add(HighlightRule("JDK internal", "jdk.internal.", "E2F0D9", style)) // soft green
+                rules.add(HighlightRule("Java lang", "java.lang.", "DDEBF7", style)) // pale blue
 
                 sectionsToHighlight.addAll(Section.entries.toList())
             }

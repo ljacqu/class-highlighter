@@ -4,6 +4,7 @@ import com.github.ljacqu.classhighlighter.utils.ColorUtil
 import com.intellij.lang.annotation.AnnotationBuilder
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.HighlightSeverity
+import com.intellij.openapi.editor.markup.EffectType
 import com.intellij.openapi.editor.markup.TextAttributes
 import java.awt.Color
 import java.awt.Font
@@ -38,8 +39,17 @@ class RuleApplication(private val rule: HighlightSettings.HighlightRule) {
     }
 
     private fun createTextAttributes(): TextAttributes {
-        val bg = Color(ColorUtil.hexStringToInt(rule.rgb))
-        return TextAttributes(null, bg, null, null, Font.PLAIN)
+        val color = Color(ColorUtil.hexStringToInt(rule.rgb))
+
+        return when (rule.style) {
+            HighlightSettings.Style.BACKGROUND -> TextAttributes(null, color, null, null, Font.PLAIN)
+            HighlightSettings.Style.TEXT_COLOR -> TextAttributes(color, null, null, null, Font.PLAIN)
+            HighlightSettings.Style.LINE_UNDERSCORE -> TextAttributes(null, null, color, EffectType.BOLD_LINE_UNDERSCORE, Font.PLAIN)
+            HighlightSettings.Style.WAVE_UNDERSCORE -> TextAttributes(null, null, color, EffectType.WAVE_UNDERSCORE, Font.PLAIN)
+            HighlightSettings.Style.DOTTED_UNDERLINE -> TextAttributes(null, null, color, EffectType.BOLD_DOTTED_LINE, Font.PLAIN)
+            HighlightSettings.Style.STRIKEOUT -> TextAttributes(null, null, color, EffectType.STRIKEOUT, Font.PLAIN)
+            HighlightSettings.Style.ROUNDED_BOX -> TextAttributes(null, null, color, EffectType.ROUNDED_BOX, Font.PLAIN)
+        }
     }
 
     private fun createRegexFilter(wildcardPattern: String): (String) -> Boolean {
