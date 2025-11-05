@@ -1,4 +1,4 @@
-package com.github.ljacqu.ijpackagehighlighter.services
+package com.github.ljacqu.classhighlighter.services
 
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.SettingsCategory
@@ -6,12 +6,16 @@ import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.util.xmlb.XmlSerializerUtil
 
+const val DEFAULT_COLOR_HEX: String = "FFDDC7"
 const val DEFAULT_COLOR: Int = 0xFFDDC7
 
+/**
+ * Persisted settings.
+ */
 @State(
-    name = "com.github.ljacqu.ijpackagehighlighter.HighlightSettings",
+    name = "com.github.ljacqu.classhighlighter.HighlightSettings",
     category = SettingsCategory.PLUGINS,
-    storages = [Storage("package-highlighter.xml")]
+    storages = [Storage("class-highlighter.xml")]
 )
 class HighlightSettings : PersistentStateComponent<HighlightSettings.State> {
 
@@ -29,15 +33,22 @@ class HighlightSettings : PersistentStateComponent<HighlightSettings.State> {
 
         var name: String = ""
         var prefix: String = ""
-        var rgb: Int = DEFAULT_COLOR
+        var rgb: String = DEFAULT_COLOR_HEX
+        var style: Style = Style.BACKGROUND
 
         // needed for XML deserialization
+        @Suppress("unused")
         internal constructor()
 
-        internal constructor(name: String, prefix: String, rgb: Int) {
+        internal constructor(name: String, prefix: String, rgb: String, style: Style) {
             this.name = name
             this.prefix = prefix
             this.rgb = rgb
+            this.style = style
+        }
+
+        companion object {
+            val DEFAULT_STYLE: Style = Style.BACKGROUND
         }
     }
 
@@ -45,10 +56,29 @@ class HighlightSettings : PersistentStateComponent<HighlightSettings.State> {
         PACKAGE,
         IMPORT,
         JAVADOC,
+        CONSTRUCTOR,
         METHOD_SIGNATURE,
         CATCH,
         FIELD_TYPE,
         OTHER
+    }
+
+    enum class Style(val text: String) {
+        BACKGROUND("Background color"),
+        TEXT_COLOR("Text color"),
+        LINE_UNDERSCORE("Underscored"),
+        WAVE_UNDERSCORE("Underwaved"),
+        DOTTED_UNDERLINE("Dotted underline"),
+        STRIKEOUT("Strikeout"),
+        ROUNDED_BOX("Bordered"),
+        ;
+
+        companion object {
+
+            fun fromText(text: String): Style =
+                entries.firstOrNull { e -> e.text == text } ?: HighlightRule.DEFAULT_STYLE
+
+        }
     }
 
     class State {
@@ -59,13 +89,13 @@ class HighlightSettings : PersistentStateComponent<HighlightSettings.State> {
 
         init {
             if (rules.isEmpty()) {
-                rules.add(HighlightRule("Java util", "java.util.", 0xFFF2CC)) // soft beige
-                rules.add(HighlightRule("JDK internal", "jdk.internal.", 0xE2F0D9)) // soft green
-                rules.add(HighlightRule("Java lang", "java.lang.", 0xDDEBF7)) // pale blue
+                val style = HighlightRule.DEFAULT_STYLE
+                rules.add(HighlightRule("Java util", "java.util.", "FFF2CC", style)) // soft beige
+                rules.add(HighlightRule("JDK internal", "jdk.internal.", "E2F0D9", style)) // soft green
+                rules.add(HighlightRule("Java lang", "java.lang.", "DDEBF7", style)) // pale blue
 
                 sectionsToHighlight.addAll(Section.entries.toList())
             }
         }
     }
 }
-

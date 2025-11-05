@@ -1,7 +1,11 @@
-package com.github.ljacqu.ijpackagehighlighter.settings
+package com.github.ljacqu.classhighlighter.settings
 
-import com.github.ljacqu.ijpackagehighlighter.services.DEFAULT_COLOR
-import com.github.ljacqu.ijpackagehighlighter.services.HighlightSettings
+import com.github.ljacqu.classhighlighter.services.DEFAULT_COLOR
+import com.github.ljacqu.classhighlighter.services.HighlightSettings
+import com.github.ljacqu.classhighlighter.services.HighlightSettings.HighlightRule.Companion.DEFAULT_STYLE
+import com.github.ljacqu.classhighlighter.services.HighlightSettings.Style
+import com.github.ljacqu.classhighlighter.utils.ColorUtil
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.table.TableView
@@ -28,11 +32,11 @@ import javax.swing.table.TableCellRenderer
  */
 class AppSettingsComponent {
 
-    val sectionCheckBoxes: List<SectionCheckBox>
-    val rulesModel: ListTableModel<Rule>
+    private val sectionCheckBoxes: List<SectionCheckBox>
+    private val rulesModel: ListTableModel<Rule>
     val mainPanel: JComponent
 
-    constructor() {
+    init {
         sectionCheckBoxes = createSectionCheckBoxes()
         val checkBoxesPanel = createSectionPanel(sectionCheckBoxes)
         rulesModel = createRulesModel()
@@ -41,7 +45,7 @@ class AppSettingsComponent {
     }
 
     private fun createRulesModel(): ListTableModel<Rule> {
-        val cols = arrayOf(NameColumn(), PrefixColumn(), ColorColumn())
+        val cols = arrayOf(NameColumn(), PrefixColumn(), ColorColumn(), StyleColumn())
         return ListTableModel<Rule>(*cols)
     }
 
@@ -58,23 +62,22 @@ class AppSettingsComponent {
         val table = TableView(rulesModel)
         table.setShowGrid(false)
         table.tableHeader.reorderingAllowed = false
-        table.setRowHeight(22)
+        table.rowHeight = 22
 
-        // set renderer/editor for color column (it's index 1)
+        table.columnModel.getColumn(0).cellEditor = TextCellEditor()
+        table.columnModel.getColumn(1).cellEditor = TextCellEditor()
+        // set renderer/editor for color column
         val colorRenderer = ColorCellRenderer()
         table.setDefaultRenderer(Int::class.java, colorRenderer) // fallback
         table.columnModel.getColumn(2).cellRenderer = colorRenderer
         table.columnModel.getColumn(2).cellEditor = ColorCellEditor()
-
-        // ensure prefix column uses text field editor (default works but explicit is fine)
-        table.columnModel.getColumn(1).cellEditor = PrefixCellEditor()
-        table.columnModel.getColumn(0).cellEditor = PrefixCellEditor()
+        table.columnModel.getColumn(3).cellEditor = StyleCellEditor()
 
         // toolbar for add/remove/move
         val decorator = ToolbarDecorator.createDecorator(table)
         decorator.setAddAction {
             // add default item and start editing first cell
-            rulesModel.addRow(Rule("", "", DEFAULT_COLOR))
+            rulesModel.addRow(Rule("", "", DEFAULT_COLOR, DEFAULT_STYLE.text))
             val newRow = rulesModel.rowCount - 1
             table.selectionModel.setSelectionInterval(newRow, newRow)
             table.editCellAt(newRow, 0)
@@ -96,16 +99,17 @@ class AppSettingsComponent {
             SectionCheckBox(HighlightSettings.Section.PACKAGE, "Highlight package declarations"),
             SectionCheckBox(HighlightSettings.Section.IMPORT, "Highlight import statements"),
             SectionCheckBox(HighlightSettings.Section.JAVADOC, "Highlight classes in JavaDoc"),
+            SectionCheckBox(HighlightSettings.Section.CONSTRUCTOR, "Highlight constructor declarations"),
             SectionCheckBox(HighlightSettings.Section.FIELD_TYPE, "Highlight field types"),
             SectionCheckBox(HighlightSettings.Section.METHOD_SIGNATURE, "Highlight types in method signatures"),
             SectionCheckBox(HighlightSettings.Section.CATCH, "Highlight types in catch clauses"),
-            SectionCheckBox(HighlightSettings.Section.OTHER, "Highlight in other places"),
+            SectionCheckBox(HighlightSettings.Section.OTHER, "Highlight other places"),
         )
     }
 
     private fun createMainPanel(checkBoxesPanel: JPanel, rulesPanel: JPanel): JPanel {
         val mainPanel = JPanel()
-        mainPanel.setLayout(BoxLayout(mainPanel, BoxLayout.Y_AXIS))
+        mainPanel.layout = BoxLayout(mainPanel, BoxLayout.Y_AXIS)
         mainPanel.add(checkBoxesPanel)
         mainPanel.add(rulesPanel)
         return mainPanel
@@ -118,7 +122,7 @@ class AppSettingsComponent {
 
     fun setSections(sections: Set<HighlightSettings.Section>) {
         sectionCheckBoxes.forEach {
-            it.setSelected(sections.contains(it.section))
+            it.isSelected = sections.contains(it.section)
         }
     }
 
@@ -138,12 +142,17 @@ class AppSettingsComponent {
     }
 
     /** Highlight rule model. */
-    data class Rule(var name: String = "", var prefix: String = "", var rgb: Int = DEFAULT_COLOR) {
+    data class Rule(var name: String = "", var prefix: String = "", var rgb: Int = DEFAULT_COLOR, var style: String) {
 
-        fun toHighlightRule(): HighlightSettings.HighlightRule = HighlightSettings.HighlightRule(name, prefix, rgb)
+        fun toHighlightRule(): HighlightSettings.HighlightRule =
+            HighlightSettings.HighlightRule(name, prefix, ColorUtil.intToHexString(rgb), Style.fromText(style))
 
-        constructor(highlightRule: HighlightSettings.HighlightRule)
-                : this(highlightRule.name, highlightRule.prefix, highlightRule.rgb)
+        constructor(highlightRule: HighlightSettings.HighlightRule) : this(
+            highlightRule.name,
+            highlightRule.prefix,
+            ColorUtil.hexStringToInt(highlightRule.rgb),
+            highlightRule.style.text
+        )
     }
 
     /** Name column definition. */
@@ -179,7 +188,18 @@ class AppSettingsComponent {
         }
     }
 
-    class PrefixCellEditor : AbstractCellEditor(), TableCellEditor {
+    /** Style column definition. */
+    class StyleColumn : ColumnInfo<Rule, String>("Style") {
+
+        override fun valueOf(item: Rule) = item.style
+        override fun isCellEditable(item: Rule) = true
+
+        override fun setValue(item: Rule, value: String?) {
+            item.style = value ?: DEFAULT_STYLE.text
+        }
+    }
+
+    class TextCellEditor : AbstractCellEditor(), TableCellEditor {
 
         private val tf = JTextField()
 
@@ -253,6 +273,30 @@ class AppSettingsComponent {
                 else -> DEFAULT_COLOR
             }
             return button
+        }
+    }
+
+    class StyleCellEditor : AbstractCellEditor(), TableCellEditor {
+
+        private val comboBox: ComboBox<String> = ComboBox(Style.entries.map { e -> e.text }.toTypedArray())
+        private var currentValue: String = DEFAULT_STYLE.text
+
+        init {
+            comboBox.addActionListener {
+                currentValue = comboBox.selectedItem as? String ?: DEFAULT_STYLE.text
+            }
+        }
+
+        override fun getCellEditorValue() = currentValue
+
+        override fun getTableCellEditorComponent(table: JTable?, value: Any?, isSelected: Boolean,
+                                                 row: Int, column: Int): Component {
+            currentValue = when (value) {
+                is String -> value
+                else -> DEFAULT_STYLE.text
+            }
+            comboBox.selectedItem = currentValue
+            return comboBox
         }
     }
 

@@ -1,6 +1,6 @@
 <!-- Keep a Changelog guide -> https://keepachangelog.com -->
 
-# ij-package-highlighter Changelog
+# Class Highlighter Changelog
 
 ## [Unreleased]
 ### Added

@@ -1,9 +1,8 @@
-package com.github.ljacqu.ijpackagehighlighter.services
+package com.github.ljacqu.classhighlighter.services
 
-import com.github.ljacqu.ijpackagehighlighter.services.HighlightSettings.Section
+import com.github.ljacqu.classhighlighter.services.HighlightSettings.Section
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiCatchSection
-import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiField
 import com.intellij.psi.PsiJavaCodeReferenceElement
 import com.intellij.psi.PsiMethod
@@ -12,28 +11,29 @@ import com.intellij.psi.PsiReferenceList
 import com.intellij.psi.javadoc.PsiDocComment
 import com.intellij.psi.util.PsiTreeUtil
 
-class HighlightSettingsService {
+/**
+ * Service offering functionality relating to the plugin's settings.
+ */
+class HighlightSettingsService(project: Project) {
 
-    private val state: HighlightSettings.State
-    private var rules: Map<String, HighlightSettings.HighlightRule>
-
-    constructor(project: Project) {
-        state = project.getService(HighlightSettings::class.java).state
-        rules = initRules()
-    }
+    private val state: HighlightSettings.State = project.getService(HighlightSettings::class.java).state
+    private var rules: List<RuleApplication> = createRuleApplications()
 
     fun shouldHighlight(section: Section): Boolean {
         return state.sectionsToHighlight.contains(section)
     }
 
+    /**
+     * Reloads the settings from [HighlightSettings].
+     */
     fun reload() {
-        rules = initRules()
+        rules = createRuleApplications()
     }
 
-    private fun initRules(): Map<String, HighlightSettings.HighlightRule> {
-        val rules = HashMap<String, HighlightSettings.HighlightRule>()
-        state.rules.forEach { rules[it.prefix] = it }
-        return rules
+    private fun createRuleApplications(): List<RuleApplication> {
+        return state.rules
+            .filter { it.prefix.isNotEmpty() }
+            .map { RuleApplication(it) }
     }
 
     fun highlightReferenceElement(element: PsiJavaCodeReferenceElement): Boolean {
@@ -67,14 +67,8 @@ class HighlightSettingsService {
         return Section.OTHER
     }
 
-    fun findRuleIfApplicable(element: PsiElement, qualifiedName: String?): HighlightSettings.HighlightRule? {
+    fun findRuleIfApplicable(qualifiedName: String?): RuleApplication? {
         if (qualifiedName == null) return null
-
-        for (entry in rules) {
-            if (qualifiedName.startsWith(entry.key)) {
-                return entry.value
-            }
-        }
-        return null
+        return rules.firstOrNull { r -> r.matches(qualifiedName) }
     }
 }
